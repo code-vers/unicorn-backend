@@ -1,7 +1,7 @@
 import cookieParser from 'cookie-parser';
 import cors, { type CorsOptions } from 'cors';
 import express, { type Application, type Request, type Response } from 'express';
-import rateLimit from 'express-rate-limit';
+// import rateLimit from 'express-rate-limit'; // unused during development
 import helmet from 'helmet';
 import swaggerUi from 'swagger-ui-express';
 
@@ -14,13 +14,16 @@ import { generateSwaggerDocs } from './app/utils/swagger';
 
 const app: Application = express();
 
-const corsOptions: CorsOptions = {
-  origin:
-    config.corsOrigin === '*'
-      ? '*'
-      : config.corsOrigin.split(',').map((origin) => origin.trim()),
-  credentials: true
-};
+// CORS fix: wildcard '*' + credentials:true is blocked by browsers.
+// When CORS_ORIGIN=*, we allow all origins without credentials.
+// When specific origins are listed, credentials (cookies/auth headers) are enabled.
+const corsOptions: CorsOptions =
+  config.corsOrigin === '*'
+    ? { origin: '*', credentials: false }
+    : {
+        origin: config.corsOrigin.split(',').map((origin) => origin.trim()),
+        credentials: true
+      };
 
 app.use(helmet());
 app.use(cors(corsOptions));
@@ -32,19 +35,20 @@ app.use(express.urlencoded({ extended: true }));
 const swaggerDocs = generateSwaggerDocs();
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-app.use(
-  '/api',
-  rateLimit({
-    windowMs: config.rateLimit.windowMs,
-    limit: config.rateLimit.max,
-    standardHeaders: 'draft-8',
-    legacyHeaders: false,
-    message: {
-      success: false,
-      message: 'Too many requests. Please try again later.'
-    }
-  })
-);
+// Rate limiting — disabled during development. Uncomment before going to production.
+// app.use(
+//   '/api',
+//   rateLimit({
+//     windowMs: config.rateLimit.windowMs,
+//     limit: config.rateLimit.max,
+//     standardHeaders: 'draft-8',
+//     legacyHeaders: false,
+//     message: {
+//       success: false,
+//       message: 'Too many requests. Please try again later.'
+//     }
+//   })
+// );
 
 app.get('/health', (_req: Request, res: Response) => {
   sendResponse(res, {
