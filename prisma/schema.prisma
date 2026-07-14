@@ -20,7 +20,36 @@ model User {
   @@map("users")
 }
 
+model Location {
+  id           String         @id @default(uuid())
+  name         String
+  address      String
+  city         String
+  locationType LocationType
+  status       LocationStatus @default(ACTIVE)
+  isDeleted    Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@map("locations")
+}
+
 enum Role {
   USER
   ADMIN
+}
+
+enum LocationType {
+  OFFICE
+  AIRPORT
+  HOTEL
+  PORT
+  SHOWROOM
+  OTHER
+}
+
+enum LocationStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
 }
