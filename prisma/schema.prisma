@@ -31,6 +31,8 @@ model Location {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
+  vehicles     Vehicle[]
+
   @@map("locations")
 }
 
@@ -52,4 +54,84 @@ enum LocationStatus {
   ACTIVE
   INACTIVE
   PENDING
+}
+
+model Vehicle {
+  id              String              @id @default(uuid())
+  name            String
+  category        VehicleCategory
+  brand           String
+  year            Int
+  transmission    VehicleTransmission
+  fuelType        VehicleFuelType
+  seatingCapacity Int
+  luggageCapacity Int?
+  description     String?
+  features        String[]
+
+  // Pricing
+  dailyRate       Decimal             @db.Decimal(10, 2)
+  weeklyRate      Decimal?            @db.Decimal(10, 2)
+  monthlyRate     Decimal?            @db.Decimal(10, 2)
+
+  // Status
+  status          VehicleStatus       @default(ACTIVE)
+  availability    VehicleAvailability @default(AVAILABLE)
+  isFeatured      Boolean             @default(false)
+
+  // Location
+  locationId      String
+  location        Location            @relation(fields: [locationId], references: [id])
+
+  // Images
+  images          VehicleImage[]
+
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@map("vehicles")
+}
+
+model VehicleImage {
+  id        String   @id @default(uuid())
+  vehicleId String
+  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  path      String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@map("vehicle_images")
+}
+
+enum VehicleCategory {
+  SALOON
+  SUV
+  VAN
+  LUXURY
+  FOUR_WD
+  CHAUFFEUR_DRIVEN
+  SELF_DRIVEN
+}
+
+enum VehicleTransmission {
+  AUTOMATIC
+  MANUAL
+}
+
+enum VehicleFuelType {
+  PETROL
+  DIESEL
+  ELECTRIC
+  HYBRID
+}
+
+enum VehicleStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum VehicleAvailability {
+  AVAILABLE
+  RENTED
+  MAINTENANCE
 }
