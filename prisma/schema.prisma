@@ -86,6 +86,9 @@ model Vehicle {
   // Images
   images          VehicleImage[]
 
+  // Drivers
+  drivers         Driver[]
+
   createdAt       DateTime            @default(now())
   updatedAt       DateTime            @updatedAt
 
@@ -134,4 +137,31 @@ enum VehicleAvailability {
   AVAILABLE
   RENTED
   MAINTENANCE
+}
+
+model Driver {
+  id                String             @id @default(uuid())
+  name              String
+  phoneNumber       String
+  whatsappNumber    String
+  photoUrl          String?
+  licensePhotoUrl   String?
+  licenseDetails    String?
+  availability      DriverAvailability @default(AVAILABLE)
+  notes             String?
+
+  assignedVehicleId String?
+  assignedVehicle   Vehicle?           @relation(fields: [assignedVehicleId], references: [id])
+
+  isDeleted         Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@map("drivers")
+}
+
+enum DriverAvailability {
+  AVAILABLE
+  ASSIGNED
+  UNAVAILABLE
 }

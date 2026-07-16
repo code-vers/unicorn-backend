@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { AuthRoutes } from '../modules/auth/auth.routes';
+import { DriverRoutes } from '../modules/driver/driver.routes';
 import { LocationRoutes } from '../modules/location/location.routes';
 import { UserRoutes } from '../modules/user/user.routes';
 import { VehicleRoutes } from '../modules/vehicle/vehicle.routes';
@@ -23,6 +24,10 @@ const moduleRoutes = [
   {
     path: '/vehicles',
     route: VehicleRoutes
+  },
+  {
+    path: '/drivers',
+    route: DriverRoutes
   }
 ];
 

@@ -2,11 +2,12 @@ import { Router } from 'express';
 
 import auth from '../../middlewares/auth';
 import validateRequest from '../../middlewares/validateRequest';
-import { upload } from '../../utils/upload';
+import { createUploader } from '../../utils/upload';
 import { VehicleController } from './vehicle.controller';
 import { VehicleValidation } from './vehicle.validation';
 
 const router = Router();
+const upload = createUploader('vehicles');
 
 router.post(
   '/',
