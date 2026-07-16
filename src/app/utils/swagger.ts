@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import { registerAuthSwagger } from '../modules/auth/auth.swagger';
 import { registerDriverSwagger } from '../modules/driver/driver.swagger';
+import { registerDropOffChargeSwagger } from '../modules/dropOffCharge/dropOffCharge.swagger';
 import { registerLocationSwagger } from '../modules/location/location.swagger';
 import { registerUserSwagger } from '../modules/user/user.swagger';
 import { registerVehicleSwagger } from '../modules/vehicle/vehicle.swagger';
@@ -25,6 +26,7 @@ registerUserSwagger(registry, bearerAuth);
 registerLocationSwagger(registry, bearerAuth);
 registerVehicleSwagger(registry, bearerAuth);
 registerDriverSwagger(registry, bearerAuth);
+registerDropOffChargeSwagger(registry, bearerAuth);
 
 export const generateSwaggerDocs = () => {
   const generator = new OpenApiGeneratorV3(registry.definitions);

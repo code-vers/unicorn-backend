@@ -31,7 +31,11 @@ model Location {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
-  vehicles     Vehicle[]
+  vehicles         Vehicle[]
+
+  // Drop-off charges relations
+  pickupCharges    DropOffCharge[] @relation("PickupLocationRelations")
+  dropOffCharges   DropOffCharge[] @relation("DropOffLocationRelations")
 
   @@map("locations")
 }
@@ -88,6 +92,9 @@ model Vehicle {
 
   // Drivers
   drivers         Driver[]
+
+  // Drop-off charges
+  dropOffCharges  DropOffCharge[]
 
   createdAt       DateTime            @default(now())
   updatedAt       DateTime            @updatedAt
@@ -164,4 +171,40 @@ enum DriverAvailability {
   AVAILABLE
   ASSIGNED
   UNAVAILABLE
+}
+
+model DropOffCharge {
+  id                  String              @id @default(uuid())
+  
+  pickupLocationId    String
+  pickupLocation      Location            @relation("PickupLocationRelations", fields: [pickupLocationId], references: [id])
+  
+  dropOffLocationId   String
+  dropOffLocation     Location            @relation("DropOffLocationRelations", fields: [dropOffLocationId], references: [id])
+  
+  vehicleCategory     VehicleCategory?
+  vehicleId           String?
+  vehicle             Vehicle?            @relation(fields: [vehicleId], references: [id])
+  
+  chargeType          ChargeType          @default(FIXED)
+  amount              Decimal             @db.Decimal(10, 2)
+  seasonalMultiplier  Decimal?            @db.Decimal(10, 2)
+  
+  status              DropOffChargeStatus @default(ACTIVE)
+  
+  isDeleted           Boolean             @default(false)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@map("drop_off_charges")
+}
+
+enum ChargeType {
+  FIXED
+  PER_KM
+}
+
+enum DropOffChargeStatus {
+  ACTIVE
+  INACTIVE
 }

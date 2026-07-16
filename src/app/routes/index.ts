@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import { AuthRoutes } from '../modules/auth/auth.routes';
 import { DriverRoutes } from '../modules/driver/driver.routes';
+import { DropOffChargeRoutes } from '../modules/dropOffCharge/dropOffCharge.routes';
 import { LocationRoutes } from '../modules/location/location.routes';
 import { UserRoutes } from '../modules/user/user.routes';
 import { VehicleRoutes } from '../modules/vehicle/vehicle.routes';
@@ -28,6 +29,10 @@ const moduleRoutes = [
   {
     path: '/drivers',
     route: DriverRoutes
+  },
+  {
+    path: '/drop-off-charges',
+    route: DropOffChargeRoutes
   }
 ];
 
