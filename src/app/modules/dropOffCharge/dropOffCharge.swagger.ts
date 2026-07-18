@@ -168,12 +168,19 @@ export const registerDropOffChargeSwagger = (
     method: 'delete',
     path: '/api/v1/drop-off-charges/{id}',
     tags: ['Drop-Off Charges'],
-    summary: 'Soft delete a drop-off charge (ADMIN only)',
+    summary: 'Soft delete one or more drop-off charges (ADMIN only)',
     security: [{ [bearerAuth.name]: [] }],
     request: {
       params: z.object({
-        id: z.string().openapi({ description: 'Drop-off charge ID', example: 'uuid-1234' })
-      })
+        id: z.string().openapi({ description: 'Drop-off charge ID (can be anything if sending array in body)', example: 'uuid-1234' })
+      }),
+      body: {
+        content: {
+          'application/json': {
+            schema: z.array(z.string()).optional().openapi({ description: 'Array of Drop-Off Charge IDs for bulk delete', example: ['uuid-1234', 'uuid-5678'] })
+          }
+        }
+      }
     },
     responses: {
       200: createSuccessResponse(z.null(), 'Drop-off charge deleted successfully', 'Drop-off charge deleted successfully.'),

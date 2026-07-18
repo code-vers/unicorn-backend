@@ -219,12 +219,19 @@ export const registerVehicleSwagger = (
     method: 'delete',
     path: '/api/v1/vehicles/{id}',
     tags: ['Vehicles'],
-    summary: 'Hard delete a vehicle (ADMIN only)',
+    summary: 'Hard delete one or more vehicles (ADMIN only)',
     security: [{ [bearerAuth.name]: [] }],
     request: {
       params: z.object({
-        id: z.string().openapi({ description: 'Vehicle ID', example: 'uuid-1234' })
-      })
+        id: z.string().openapi({ description: 'Vehicle ID (can be anything if sending array in body)', example: 'uuid-1234' })
+      }),
+      body: {
+        content: {
+          'application/json': {
+            schema: z.array(z.string()).optional().openapi({ description: 'Array of Vehicle IDs for bulk delete', example: ['uuid-1234', 'uuid-5678'] })
+          }
+        }
+      }
     },
     responses: {
       200: createSuccessResponse(z.null(), 'Vehicle deleted successfully', 'Vehicle deleted successfully.'),

@@ -178,18 +178,30 @@ const updateAvailability = async (id: string, payload: IUpdateDriverAvailability
   return updatedDriver;
 };
 
-const deleteDriver = async (id: string) => {
-  const existingDriver = await prisma.driver.findFirst({
-    where: { id, isDeleted: false }
+const deleteDriver = async (idOrIds: string | string[]) => {
+  let ids: string[] = [];
+
+  if (Array.isArray(idOrIds)) {
+    ids = idOrIds;
+  } else if (typeof idOrIds === 'string') {
+    ids = [idOrIds];
+  }
+
+  if (ids.length === 0) {
+    throw new AppError(400, 'No driver ID provided.');
+  }
+
+  const existingDrivers = await prisma.driver.findMany({
+    where: { id: { in: ids }, isDeleted: false }
   });
 
-  if (!existingDriver) {
-    throw new AppError(404, 'Driver not found.');
+  if (existingDrivers.length === 0) {
+    throw new AppError(404, 'Driver(s) not found.');
   }
 
   // Soft delete driver
-  await prisma.driver.update({
-    where: { id },
+  await prisma.driver.updateMany({
+    where: { id: { in: ids } },
     data: { isDeleted: true }
   });
 

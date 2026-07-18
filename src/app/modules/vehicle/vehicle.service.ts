@@ -188,23 +188,35 @@ const updateAvailability = async (id: string, payload: IUpdateAvailabilityPayloa
   return updatedVehicle;
 };
 
-const deleteVehicle = async (id: string) => {
-  const existingVehicle = await prisma.vehicle.findUnique({
-    where: { id },
+const deleteVehicle = async (idOrIds: string | string[]) => {
+  let ids: string[] = [];
+  
+  if (Array.isArray(idOrIds)) {
+    ids = idOrIds;
+  } else if (typeof idOrIds === 'string') {
+    ids = [idOrIds];
+  }
+
+  if (ids.length === 0) {
+    throw new AppError(400, 'No vehicle ID provided.');
+  }
+
+  const existingVehicles = await prisma.vehicle.findMany({
+    where: { id: { in: ids } },
     include: { images: true }
   });
 
-  if (!existingVehicle) {
-    throw new AppError(404, 'Vehicle not found.');
+  if (existingVehicles.length === 0) {
+    throw new AppError(404, 'Vehicle(s) not found.');
   }
 
   // DB deletion (Cascade handles vehicle_images rows)
-  await prisma.vehicle.delete({
-    where: { id }
+  await prisma.vehicle.deleteMany({
+    where: { id: { in: ids } }
   });
 
   // Filesystem deletion
-  const imagePaths = existingVehicle.images.map(img => img.path);
+  const imagePaths = existingVehicles.flatMap(v => v.images.map(img => img.path));
   deleteImageFiles(imagePaths);
 };
 

@@ -167,17 +167,29 @@ const updateCharge = async (id: string, payload: IUpdateDropOffChargePayload) =>
   return result;
 };
 
-const deleteCharge = async (id: string) => {
-  const existingCharge = await prisma.dropOffCharge.findFirst({
-    where: { id, isDeleted: false }
-  });
+const deleteCharge = async (idOrIds: string | string[]) => {
+  let ids: string[] = [];
 
-  if (!existingCharge) {
-    throw new AppError(404, 'Drop-off charge not found.');
+  if (Array.isArray(idOrIds)) {
+    ids = idOrIds;
+  } else if (typeof idOrIds === 'string') {
+    ids = [idOrIds];
   }
 
-  await prisma.dropOffCharge.update({
-    where: { id },
+  if (ids.length === 0) {
+    throw new AppError(400, 'No drop-off charge ID provided.');
+  }
+
+  const existingCharges = await prisma.dropOffCharge.findMany({
+    where: { id: { in: ids }, isDeleted: false }
+  });
+
+  if (existingCharges.length === 0) {
+    throw new AppError(404, 'Drop-off charge(s) not found.');
+  }
+
+  await prisma.dropOffCharge.updateMany({
+    where: { id: { in: ids } },
     data: { isDeleted: true }
   });
 };

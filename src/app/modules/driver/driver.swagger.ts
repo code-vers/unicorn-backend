@@ -183,12 +183,19 @@ export const registerDriverSwagger = (
     method: 'delete',
     path: '/api/v1/drivers/{id}',
     tags: ['Drivers'],
-    summary: 'Soft delete a driver (ADMIN only)',
+    summary: 'Soft delete one or more drivers (ADMIN only)',
     security: [{ [bearerAuth.name]: [] }],
     request: {
       params: z.object({
-        id: z.string().openapi({ description: 'Driver ID', example: 'uuid-1234' })
-      })
+        id: z.string().openapi({ description: 'Driver ID (can be anything if sending array in body)', example: 'uuid-1234' })
+      }),
+      body: {
+        content: {
+          'application/json': {
+            schema: z.array(z.string()).optional().openapi({ description: 'Array of Driver IDs for bulk delete', example: ['uuid-1234', 'uuid-5678'] })
+          }
+        }
+      }
     },
     responses: {
       200: createSuccessResponse(z.null(), 'Driver deleted successfully', 'Driver deleted successfully.'),
