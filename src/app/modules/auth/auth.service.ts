@@ -67,11 +67,16 @@ const login = async (payload: IUserLoginPayload): Promise<ILoginResponse> => {
   const user = await prisma.user.findUnique({
     where: {
       email: payload.email
-    }
+    },
+    include: { profile: true }
   });
 
   if (!user) {
     throw new AppError(401, 'Invalid email or password.');
+  }
+
+  if (user.profile && (user.profile.isDeleted || user.profile.status !== 'ACTIVE')) {
+    throw new AppError(401, 'Account is inactive or blocked.');
   }
 
   const isPasswordMatched = await bcrypt.compare(payload.password, user.password);

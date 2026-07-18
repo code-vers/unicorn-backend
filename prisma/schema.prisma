@@ -17,7 +17,50 @@ model User {
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 
+  profile              UserProfile?
+  documents            UserDocument[]
+
   @@map("users")
+}
+
+model UserProfile {
+  id                   String    @id @default(uuid())
+  userId               String    @unique
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  photoUrl             String?
+  phoneNumber          String?
+  address              String?
+  idPassportNumber     String?
+
+  emergencyContactName     String?
+  emergencyContactEmail    String?
+  emergencyContactPhone    String?
+  emergencyContactRelation String?
+
+  status               UserStatus @default(ACTIVE)
+  isDeleted            Boolean    @default(false)
+
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@map("user_profiles")
+}
+
+model UserDocument {
+  id        String         @id @default(uuid())
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type      DocumentType
+  name      String?        
+  path      String         
+  status    DocumentStatus @default(PENDING_REVIEW)
+  
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@map("user_documents")
 }
 
 model Location {
@@ -43,6 +86,26 @@ model Location {
 enum Role {
   USER
   ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+  INACTIVE
+}
+
+enum DocumentType {
+  DRIVERS_LICENSE
+  PASSPORT_ID
+  KRA_PIN
+  INSURANCE
+  OTHER
+}
+
+enum DocumentStatus {
+  PENDING_REVIEW
+  VERIFIED
+  REJECTED
 }
 
 enum LocationType {
