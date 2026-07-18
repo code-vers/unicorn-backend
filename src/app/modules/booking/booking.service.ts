@@ -371,7 +371,7 @@ const getAllBookings = async (query: any) => {
   };
 
   const data = await prisma.booking.findMany(prismaQuery);
-  const total = await prisma.booking.count({ where: prismaQuery.where });
+  const total = await prisma.booking.count({ where: builtQuery.where });
   const take = builtQuery.take || 10;
   const skip = builtQuery.skip || 0;
   const totalPages = Math.ceil(total / take);

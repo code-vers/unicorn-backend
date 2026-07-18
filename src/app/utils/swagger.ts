@@ -7,6 +7,8 @@ import { registerDropOffChargeSwagger } from '../modules/dropOffCharge/dropOffCh
 import { registerLocationSwagger } from '../modules/location/location.swagger';
 import { registerUserSwagger } from '../modules/user/user.swagger';
 import { registerVehicleSwagger } from '../modules/vehicle/vehicle.swagger';
+import { registerSettingSwagger } from '../modules/setting/setting.swagger';
+import { registerBookingSwagger } from '../modules/booking/booking.swagger';
 
 // Extend Zod to support OpenAPI
 extendZodWithOpenApi(z);
@@ -27,6 +29,8 @@ registerLocationSwagger(registry, bearerAuth);
 registerVehicleSwagger(registry, bearerAuth);
 registerDriverSwagger(registry, bearerAuth);
 registerDropOffChargeSwagger(registry, bearerAuth);
+registerSettingSwagger(registry, bearerAuth);
+registerBookingSwagger(registry, bearerAuth);
 
 export const generateSwaggerDocs = () => {
   const generator = new OpenApiGeneratorV3(registry.definitions);

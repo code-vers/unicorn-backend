@@ -1,183 +1,202 @@
-export const bookingSwaggerPaths = {
-  '/api/v1/bookings/calculate': {
-    post: {
-      tags: ['Bookings'],
-      summary: 'Calculate booking costs',
-      description: 'Get the estimated cost for a booking including rental, drop-off fee, addons, and taxes',
-      requestBody: {
-        required: true,
+import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
+import { z } from 'zod';
+
+import {
+  Error400,
+  Error401,
+  Error403,
+  Error404,
+  Error500,
+  createPaginatedResponse,
+  createSuccessResponse
+} from '../../utils/swaggerHelpers';
+
+const BookingSchema = z.object({
+  id: z.string(),
+  referenceId: z.string(),
+  userId: z.string(),
+  vehicleId: z.string(),
+  pickupLocationId: z.string(),
+  dropOffLocationId: z.string(),
+  pickupDate: z.string(),
+  dropOffDate: z.string(),
+  rentalCost: z.number(),
+  pickupFee: z.number(),
+  dropOffFee: z.number(),
+  hasGps: z.boolean(),
+  hasFullInsurance: z.boolean(),
+  hasAdditionalDriver: z.boolean(),
+  hasChildSeat: z.boolean(),
+  addonsCost: z.number(),
+  taxPercentage: z.number(),
+  taxAmount: z.number(),
+  totalAmount: z.number(),
+  amountPaid: z.number(),
+  paymentStatus: z.string(),
+  bookingStatus: z.string(),
+  assignedDriverId: z.string().nullable().optional(),
+  createdAt: z.string(),
+  updatedAt: z.string()
+});
+
+const CalculateBookingSchema = z.object({
+  vehicleId: z.string(),
+  pickupLocationId: z.string(),
+  dropOffLocationId: z.string(),
+  pickupDate: z.string(),
+  dropOffDate: z.string(),
+  hasGps: z.boolean().optional(),
+  hasFullInsurance: z.boolean().optional(),
+  hasAdditionalDriver: z.boolean().optional(),
+  hasChildSeat: z.boolean().optional()
+});
+
+const CreateBookingSchema = CalculateBookingSchema.extend({
+  driverDetails: z.object({
+    firstName: z.string(),
+    lastName: z.string(),
+    email: z.string(),
+    phone: z.string()
+  }),
+  billingInfo: z.object({
+    firstName: z.string(),
+    lastName: z.string(),
+    email: z.string(),
+    phone: z.string(),
+    address: z.string(),
+    city: z.string(),
+    country: z.string()
+  })
+});
+
+export const registerBookingSwagger = (
+  registry: OpenAPIRegistry,
+  bearerAuth: { name: string }
+): void => {
+  registry.registerPath({
+    method: 'post',
+    path: '/api/v1/bookings/calculate',
+    tags: ['Bookings'],
+    summary: 'Calculate booking costs',
+    request: {
+      body: {
         content: {
           'application/json': {
-            schema: {
-              type: 'object',
-              properties: {
-                vehicleId: { type: 'string' },
-                pickupLocationId: { type: 'string' },
-                dropOffLocationId: { type: 'string' },
-                pickupDate: { type: 'string', format: 'date-time' },
-                dropOffDate: { type: 'string', format: 'date-time' },
-                hasGps: { type: 'boolean' },
-                hasFullInsurance: { type: 'boolean' },
-                hasAdditionalDriver: { type: 'boolean' },
-                hasChildSeat: { type: 'boolean' }
-              },
-              required: ['vehicleId', 'pickupLocationId', 'dropOffLocationId', 'pickupDate', 'dropOffDate']
-            }
+            schema: CalculateBookingSchema
           }
-        }
-      },
-      responses: {
-        '200': {
-          description: 'Calculation successful'
-        }
-      }
-    }
-  },
-  '/api/v1/bookings': {
-    post: {
-      tags: ['Bookings'],
-      summary: 'Create a new booking',
-      description: 'Create a new booking and associated details',
-      security: [{ bearerAuth: [] }],
-      requestBody: {
-        required: true,
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-              properties: {
-                vehicleId: { type: 'string' },
-                pickupLocationId: { type: 'string' },
-                dropOffLocationId: { type: 'string' },
-                pickupDate: { type: 'string', format: 'date-time' },
-                dropOffDate: { type: 'string', format: 'date-time' },
-                hasGps: { type: 'boolean' },
-                hasFullInsurance: { type: 'boolean' },
-                hasAdditionalDriver: { type: 'boolean' },
-                hasChildSeat: { type: 'boolean' },
-                driverDetails: {
-                  type: 'object',
-                  properties: {
-                    firstName: { type: 'string' },
-                    lastName: { type: 'string' },
-                    email: { type: 'string' },
-                    phone: { type: 'string' }
-                  }
-                },
-                billingInfo: {
-                  type: 'object',
-                  properties: {
-                    firstName: { type: 'string' },
-                    lastName: { type: 'string' },
-                    email: { type: 'string' },
-                    phone: { type: 'string' },
-                    address: { type: 'string' },
-                    city: { type: 'string' },
-                    country: { type: 'string' }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      responses: {
-        '201': {
-          description: 'Booking created successfully'
         }
       }
     },
-    get: {
-      tags: ['Bookings'],
-      summary: 'Get all bookings',
-      description: 'Retrieve all bookings with pagination (Admin only)',
-      security: [{ bearerAuth: [] }],
-      parameters: [
-        {
-          name: 'page',
-          in: 'query',
-          schema: { type: 'integer' }
-        },
-        {
-          name: 'limit',
-          in: 'query',
-          schema: { type: 'integer' }
-        }
-      ],
-      responses: {
-        '200': {
-          description: 'Bookings retrieved successfully'
-        }
-      }
+    responses: {
+      200: createSuccessResponse(z.any(), 'Calculation successful', 'Calculation successful.'),
+      400: Error400,
+      500: Error500
     }
-  },
-  '/api/v1/bookings/my-bookings': {
-    get: {
-      tags: ['Bookings'],
-      summary: 'Get my bookings',
-      description: 'Retrieve bookings for the currently authenticated user',
-      security: [{ bearerAuth: [] }],
-      responses: {
-        '200': {
-          description: 'Bookings retrieved successfully'
-        }
-      }
-    }
-  },
-  '/api/v1/bookings/{id}': {
-    get: {
-      tags: ['Bookings'],
-      summary: 'Get booking by ID',
-      security: [{ bearerAuth: [] }],
-      parameters: [
-        {
-          name: 'id',
-          in: 'path',
-          required: true,
-          schema: { type: 'string' }
-        }
-      ],
-      responses: {
-        '200': {
-          description: 'Booking retrieved successfully'
-        }
-      }
-    }
-  },
-  '/api/v1/bookings/{id}/status': {
-    patch: {
-      tags: ['Bookings'],
-      summary: 'Update booking status',
-      description: 'Update status of a booking. Sets vehicle availability when status changes to ONGOING/COMPLETED (Admin only)',
-      security: [{ bearerAuth: [] }],
-      parameters: [
-        {
-          name: 'id',
-          in: 'path',
-          required: true,
-          schema: { type: 'string' }
-        }
-      ],
-      requestBody: {
-        required: true,
+  });
+
+  registry.registerPath({
+    method: 'post',
+    path: '/api/v1/bookings',
+    tags: ['Bookings'],
+    summary: 'Create a new booking',
+    security: [{ [bearerAuth.name]: [] }],
+    request: {
+      body: {
         content: {
           'application/json': {
-            schema: {
-              type: 'object',
-              properties: {
-                status: { type: 'string', enum: ['PENDING', 'CONFIRMED', 'ONGOING', 'COMPLETED', 'CANCELLED'] },
-                assignedDriverId: { type: 'string', description: 'Assign a chauffeur (Admin only)' }
-              },
-              required: ['status']
-            }
+            schema: CreateBookingSchema
           }
         }
-      },
-      responses: {
-        '200': {
-          description: 'Booking status updated successfully'
+      }
+    },
+    responses: {
+      201: createSuccessResponse(BookingSchema, 'Booking created successfully', 'Booking created successfully.'),
+      400: Error400,
+      401: Error401,
+      500: Error500
+    }
+  });
+
+  registry.registerPath({
+    method: 'get',
+    path: '/api/v1/bookings',
+    tags: ['Bookings'],
+    summary: 'Get all bookings (ADMIN only)',
+    security: [{ [bearerAuth.name]: [] }],
+    request: {
+      query: z.object({
+        page: z.string().optional(),
+        limit: z.string().optional()
+      })
+    },
+    responses: {
+      200: createPaginatedResponse(BookingSchema, 'Bookings retrieved successfully', 'Bookings retrieved successfully.'),
+      401: Error401,
+      403: Error403,
+      500: Error500
+    }
+  });
+
+  registry.registerPath({
+    method: 'get',
+    path: '/api/v1/bookings/my-bookings',
+    tags: ['Bookings'],
+    summary: 'Get my bookings',
+    security: [{ [bearerAuth.name]: [] }],
+    responses: {
+      200: createPaginatedResponse(BookingSchema, 'Bookings retrieved successfully', 'Bookings retrieved successfully.'),
+      401: Error401,
+      500: Error500
+    }
+  });
+
+  registry.registerPath({
+    method: 'get',
+    path: '/api/v1/bookings/{id}',
+    tags: ['Bookings'],
+    summary: 'Get booking by ID',
+    security: [{ [bearerAuth.name]: [] }],
+    request: {
+      params: z.object({
+        id: z.string()
+      })
+    },
+    responses: {
+      200: createSuccessResponse(BookingSchema, 'Booking retrieved successfully', 'Booking retrieved successfully.'),
+      401: Error401,
+      404: Error404,
+      500: Error500
+    }
+  });
+
+  registry.registerPath({
+    method: 'patch',
+    path: '/api/v1/bookings/{id}/status',
+    tags: ['Bookings'],
+    summary: 'Update booking status (ADMIN only)',
+    security: [{ [bearerAuth.name]: [] }],
+    request: {
+      params: z.object({
+        id: z.string()
+      }),
+      body: {
+        content: {
+          'application/json': {
+            schema: z.object({
+              status: z.enum(['PENDING', 'CONFIRMED', 'ONGOING', 'COMPLETED', 'CANCELLED']),
+              assignedDriverId: z.string().optional()
+            })
+          }
         }
       }
+    },
+    responses: {
+      200: createSuccessResponse(BookingSchema, 'Booking status updated successfully', 'Booking status updated successfully.'),
+      400: Error400,
+      401: Error401,
+      403: Error403,
+      404: Error404,
+      500: Error500
     }
-  }
+  });
 };
