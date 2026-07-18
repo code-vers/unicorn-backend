@@ -35,7 +35,11 @@ const DRIVER_SELECT = {
   }
 } satisfies Prisma.DriverSelect;
 
-const createDriver = async (payload: ICreateDriverPayload, photoUrl?: string, licensePhotoUrl?: string) => {
+const createDriver = async (
+  payload: ICreateDriverPayload,
+  photoUrl?: string,
+  licensePhotoUrl?: string
+) => {
   if (payload.assignedVehicleId) {
     const vehicle = await prisma.vehicle.findUnique({
       where: { id: payload.assignedVehicleId }
@@ -115,7 +119,12 @@ const deletePhotoFile = (photoPath: string) => {
   }
 };
 
-const updateDriver = async (id: string, payload: IUpdateDriverPayload, newPhotoUrl?: string, newLicensePhotoUrl?: string) => {
+const updateDriver = async (
+  id: string,
+  payload: IUpdateDriverPayload,
+  newPhotoUrl?: string,
+  newLicensePhotoUrl?: string
+) => {
   const existingDriver = await prisma.driver.findFirst({
     where: { id, isDeleted: false }
   });
@@ -205,7 +214,11 @@ const deleteDriver = async (idOrIds: string | string[]) => {
     data: { isDeleted: true }
   });
 
-  // Optional: Do not delete photo on soft delete to keep history.
+  // Also delete physical photo files to save space
+  existingDrivers.forEach((driver) => {
+    if (driver.photoUrl) deletePhotoFile(driver.photoUrl);
+    if (driver.licensePhotoUrl) deletePhotoFile(driver.licensePhotoUrl);
+  });
 };
 
 export const DriverService = {
