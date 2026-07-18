@@ -19,6 +19,7 @@ model User {
 
   profile              UserProfile?
   documents            UserDocument[]
+  bookings             Booking[]
 
   @@map("users")
 }
@@ -79,6 +80,10 @@ model Location {
   // Drop-off charges relations
   pickupCharges    DropOffCharge[] @relation("PickupLocationRelations")
   dropOffCharges   DropOffCharge[] @relation("DropOffLocationRelations")
+
+  // Bookings
+  bookingPickups   Booking[]       @relation("BookingPickupLocation")
+  bookingDropOffs  Booking[]       @relation("BookingDropOffLocation")
 
   @@map("locations")
 }
@@ -158,6 +163,9 @@ model Vehicle {
 
   // Drop-off charges
   dropOffCharges  DropOffCharge[]
+
+  // Bookings
+  bookings        Booking[]
 
   createdAt       DateTime            @default(now())
   updatedAt       DateTime            @updatedAt
@@ -270,4 +278,139 @@ enum ChargeType {
 enum DropOffChargeStatus {
   ACTIVE
   INACTIVE
+}
+
+model SystemSetting {
+  id            String   @id @default(uuid())
+  key           String   @unique
+  value         String
+  description   String?
+  updatedAt     DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+model Booking {
+  id                String   @id @default(uuid())
+  referenceId       String   @unique // e.g., UC2026-4812
+  
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+  
+  vehicleId         String
+  vehicle           Vehicle  @relation(fields: [vehicleId], references: [id])
+  
+  pickupLocationId  String
+  pickupLocation    Location @relation("BookingPickupLocation", fields: [pickupLocationId], references: [id])
+  
+  dropOffLocationId String
+  dropOffLocation   Location @relation("BookingDropOffLocation", fields: [dropOffLocationId], references: [id])
+  
+  pickupDate        DateTime
+  dropOffDate       DateTime
+  
+  // Pricing Breakdown
+  rentalCost        Decimal  @db.Decimal(10, 2)
+  pickupFee         Decimal  @db.Decimal(10, 2)
+  dropOffFee        Decimal  @db.Decimal(10, 2)
+  
+  // Add-ons & Extras (Flags)
+  hasGps                Boolean @default(false)
+  hasFullInsurance      Boolean @default(false)
+  hasAdditionalDriver   Boolean @default(false)
+  hasChildSeat          Boolean @default(false)
+  addonsCost            Decimal @db.Decimal(10, 2) @default(0.00)
+
+  modificationFee   Decimal  @db.Decimal(10, 2) @default(0.00)
+  taxPercentage     Decimal  @db.Decimal(5, 2)  @default(16.00)
+  taxAmount         Decimal  @db.Decimal(10, 2)
+  totalAmount       Decimal  @db.Decimal(10, 2)
+  amountPaid        Decimal  @db.Decimal(10, 2) @default(0.00)
+  
+  // Status
+  paymentStatus     PaymentStatus @default(PENDING)
+  bookingStatus     BookingStatus @default(PENDING)
+  
+  // Associated Details
+  driverDetails     BookingDriverDetail?
+  billingInfo       BillingInfo?
+  payments          Payment[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("bookings")
+}
+
+model BookingDriverDetail {
+  id          String   @id @default(uuid())
+  bookingId   String   @unique
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  firstName   String
+  lastName    String
+  email       String
+  phone       String
+  dateOfBirth DateTime?
+  message     String?
+
+  @@map("booking_driver_details")
+}
+
+model BillingInfo {
+  id          String   @id @default(uuid())
+  bookingId   String   @unique
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  firstName   String
+  lastName    String
+  email       String
+  phone       String
+  address     String
+  city        String
+  state       String?
+  country     String
+  zipCode     String?
+  description String?
+
+  @@map("billing_infos")
+}
+
+model Payment {
+  id                String   @id @default(uuid())
+  bookingId         String
+  booking           Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  amount            Decimal  @db.Decimal(10, 2)
+  paymentMethod     PaymentMethod // MPESA, AIRTEL, CARD, PESAPAL
+  transactionId     String?  @unique
+  paymentStatus     PaymentStatus @default(PENDING)
+  paymentType       String   @default("INITIAL") // INITIAL, EXTENSION, MODIFICATION
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("payments")
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  MPESA
+  AIRTEL
+  CARD
+  PESAPAL
 }

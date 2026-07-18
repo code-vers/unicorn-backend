@@ -6,6 +6,8 @@ import { DropOffChargeRoutes } from '../modules/dropOffCharge/dropOffCharge.rout
 import { LocationRoutes } from '../modules/location/location.routes';
 import { UserRoutes } from '../modules/user/user.routes';
 import { VehicleRoutes } from '../modules/vehicle/vehicle.routes';
+import { SettingRoutes } from '../modules/setting/setting.routes';
+import { BookingRoutes } from '../modules/booking/booking.routes';
 
 const router = Router();
 
@@ -33,6 +35,14 @@ const moduleRoutes = [
   {
     path: '/drop-off-charges',
     route: DropOffChargeRoutes
+  },
+  {
+    path: '/settings',
+    route: SettingRoutes
+  },
+  {
+    path: '/bookings',
+    route: BookingRoutes
   }
 ];
 
