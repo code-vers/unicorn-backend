@@ -150,15 +150,22 @@ export const registerLocationSwagger = (
     method: 'delete',
     path: '/api/v1/locations/{id}',
     tags: ['Locations'],
-    summary: 'Soft-delete a location (ADMIN only)',
+    summary: 'Soft delete one or more locations (ADMIN only)',
     security: [{ [bearerAuth.name]: [] }],
     request: {
       params: z.object({
-        id: z.string().openapi({ description: 'Location ID', example: 'uuid-1234' })
-      })
+        id: z.string().openapi({ description: 'Location ID (can be anything if sending array in body)', example: 'uuid-1234' })
+      }),
+      body: {
+        content: {
+          'application/json': {
+            schema: z.array(z.string()).optional().openapi({ description: 'Array of Location IDs for bulk delete', example: ['uuid-1234', 'uuid-5678'] })
+          }
+        }
+      }
     },
     responses: {
-      200: createSuccessResponse(z.null(), 'Location deleted successfully', 'Location deleted successfully.'),
+      200: createSuccessResponse(z.null(), 'Location(s) deleted successfully', 'Location(s) deleted successfully.'),
       401: Error401,
       403: Error403,
       404: Error404,

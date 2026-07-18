@@ -54,8 +54,8 @@ const updateLocation: RequestHandler = catchAsync(async (req, res) => {
 });
 
 const deleteLocation: RequestHandler = catchAsync(async (req, res) => {
-  const id = req.params['id'] as string;
-  await LocationService.deleteLocation(id);
+  const idOrIds = Array.isArray(req.body) && req.body.length > 0 ? req.body : req.params['id'] as string;
+  await LocationService.deleteLocation(idOrIds);
 
   sendResponse(res, {
     statusCode: 200,

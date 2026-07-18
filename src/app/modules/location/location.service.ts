@@ -160,17 +160,29 @@ const updateLocation = async (
   return sanitizeLocation(updatedLocation);
 };
 
-const deleteLocation = async (id: string): Promise<void> => {
-  const existingLocation = await prisma.location.findFirst({
-    where: { id, isDeleted: false }
-  });
-
-  if (!existingLocation) {
-    throw new AppError(404, 'Location not found.');
+const deleteLocation = async (idOrIds: string | string[]): Promise<void> => {
+  let ids: string[] = [];
+  
+  if (Array.isArray(idOrIds)) {
+    ids = idOrIds;
+  } else if (typeof idOrIds === 'string') {
+    ids = [idOrIds];
   }
 
-  await prisma.location.update({
-    where: { id },
+  if (ids.length === 0) {
+    throw new AppError(400, 'No location ID provided.');
+  }
+
+  const existingLocations = await prisma.location.findMany({
+    where: { id: { in: ids }, isDeleted: false }
+  });
+
+  if (existingLocations.length === 0) {
+    throw new AppError(404, 'Location(s) not found.');
+  }
+
+  await prisma.location.updateMany({
+    where: { id: { in: ids } },
     data: { isDeleted: true }
   });
 };
