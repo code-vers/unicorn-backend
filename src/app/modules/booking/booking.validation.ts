@@ -71,7 +71,8 @@ const paymentZodSchema = z.object({
 
 const statusZodSchema = z.object({
   body: z.object({
-    status: z.enum(['PENDING', 'CONFIRMED', 'ONGOING', 'COMPLETED', 'CANCELLED'])
+    status: z.enum(['PENDING', 'CONFIRMED', 'ONGOING', 'COMPLETED', 'CANCELLED']),
+    assignedDriverId: z.string().optional()
   })
 });
 

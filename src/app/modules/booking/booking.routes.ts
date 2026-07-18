@@ -21,6 +21,12 @@ router.post(
 );
 
 router.get(
+  '/',
+  auth('ADMIN'),
+  BookingController.getAllBookings
+);
+
+router.get(
   '/my-bookings',
   auth('USER', 'ADMIN'),
   BookingController.getMyBookings
@@ -51,6 +57,13 @@ router.patch(
   auth('USER', 'ADMIN'),
   validateRequest(BookingValidation.modifyBookingZodSchema),
   BookingController.modifyBooking
+);
+
+router.patch(
+  '/:id/status',
+  auth('ADMIN'),
+  validateRequest(BookingValidation.statusZodSchema),
+  BookingController.updateBookingStatus
 );
 
 export const BookingRoutes = router;

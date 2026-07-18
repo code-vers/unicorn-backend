@@ -89,6 +89,30 @@ const modifyBooking = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllBookings = catchAsync(async (req: Request, res: Response) => {
+  const result = await BookingService.getAllBookings(req.query);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'All bookings retrieved successfully',
+    meta: result.meta,
+    data: result.data
+  });
+});
+
+const updateBookingStatus = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await BookingService.updateBookingStatus(id as string, req.body);
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Booking status updated successfully',
+    data: result
+  });
+});
+
 export const BookingController = {
   calculate,
   createBooking,
@@ -96,5 +120,7 @@ export const BookingController = {
   getBookingById,
   addPayment,
   extendPayment,
-  modifyBooking
+  modifyBooking,
+  getAllBookings,
+  updateBookingStatus
 };

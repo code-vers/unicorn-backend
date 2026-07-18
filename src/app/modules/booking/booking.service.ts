@@ -8,7 +8,8 @@ import type {
   IBookingCalculatePayload,
   IBookingCreatePayload,
   IBookingModifyPayload,
-  IPaymentPayload
+  IPaymentPayload,
+  IBookingUpdateStatusPayload
 } from './booking.interface';
 
 // Hardcoded Add-on prices based on requirements (can be moved to SystemSettings later)
@@ -351,11 +352,83 @@ const modifyBooking = async (id: string, userId: string, payload: IBookingModify
   return updatedBooking;
 };
 
+const getAllBookings = async (query: any) => {
+  const bookingQuery = new QueryBuilder(query)
+    .filter()
+    .sort()
+    .paginate();
+
+  const builtQuery = bookingQuery.build();
+  
+  const prismaQuery = {
+    ...builtQuery,
+    include: {
+      vehicle: true,
+      pickupLocation: true,
+      dropOffLocation: true,
+      driverDetails: true
+    }
+  };
+
+  const data = await prisma.booking.findMany(prismaQuery);
+  const total = await prisma.booking.count({ where: prismaQuery.where });
+  const take = builtQuery.take || 10;
+  const skip = builtQuery.skip || 0;
+  const totalPages = Math.ceil(total / take);
+
+  return {
+    meta: {
+      page: skip / take + 1,
+      limit: take,
+      total,
+      totalPages
+    },
+    data
+  };
+};
+
+const updateBookingStatus = async (id: string, payload: IBookingUpdateStatusPayload) => {
+  const booking = await prisma.booking.findUnique({ where: { id } });
+  if (!booking) throw new AppError(404, 'Booking not found');
+
+  const result = await prisma.$transaction(async (tx) => {
+    const updatedBooking = await tx.booking.update({
+      where: { id },
+      data: {
+        bookingStatus: payload.status,
+        assignedDriverId: payload.assignedDriverId || booking.assignedDriverId
+      },
+      include: {
+        vehicle: true,
+        assignedDriver: true
+      }
+    });
+
+    if (payload.status === 'ONGOING') {
+      await tx.vehicle.update({
+        where: { id: booking.vehicleId },
+        data: { availability: 'RENTED' }
+      });
+    } else if (payload.status === 'COMPLETED' || payload.status === 'CANCELLED') {
+      await tx.vehicle.update({
+        where: { id: booking.vehicleId },
+        data: { availability: 'AVAILABLE' }
+      });
+    }
+
+    return updatedBooking;
+  });
+
+  return result;
+};
+
 export const BookingService = {
   calculate,
   createBooking,
   getMyBookings,
   getBookingById,
   addPayment,
-  modifyBooking
+  modifyBooking,
+  getAllBookings,
+  updateBookingStatus
 };

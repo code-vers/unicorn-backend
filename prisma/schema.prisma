@@ -230,6 +230,7 @@ model Driver {
 
   assignedVehicleId String?
   assignedVehicle   Vehicle?           @relation(fields: [assignedVehicleId], references: [id])
+  bookings          Booking[]
 
   isDeleted         Boolean            @default(false)
   createdAt         DateTime           @default(now())
@@ -299,6 +300,9 @@ model Booking {
   
   vehicleId         String
   vehicle           Vehicle  @relation(fields: [vehicleId], references: [id])
+  
+  assignedDriverId  String?
+  assignedDriver    Driver?  @relation(fields: [assignedDriverId], references: [id])
   
   pickupLocationId  String
   pickupLocation    Location @relation("BookingPickupLocation", fields: [pickupLocationId], references: [id])

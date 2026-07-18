@@ -51,3 +51,8 @@ export interface IBookingModifyPayload {
   hasAdditionalDriver?: boolean;
   hasChildSeat?: boolean;
 }
+
+export interface IBookingUpdateStatusPayload {
+  status: 'PENDING' | 'CONFIRMED' | 'ONGOING' | 'COMPLETED' | 'CANCELLED';
+  assignedDriverId?: string;
+}
