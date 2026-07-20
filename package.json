@@ -1,7 +1,7 @@
 {
-  "name": "zilkywipesbackend",
+  "name": "Unicorn Backend",
   "version": "1.0.0",
-  "description": "Production-ready Node.js, Express, TypeScript, PostgreSQL, and Prisma boilerplate.",
+  "description": "a car rental backend with nodejs and prisma",
   "main": "dist/server.js",
   "prisma": {
     "seed": "tsx prisma/seed.ts"
