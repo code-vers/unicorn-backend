@@ -17,27 +17,8 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCa
  * @param folderName The name of the folder (e.g., 'vehicles', 'drivers')
  */
 export const createUploader = (folderName: string) => {
-  // Base upload directory relative to project root
-  const UPLOAD_DIR = path.join(process.cwd(), 'uploads', folderName);
-
-  // Ensure the upload directory exists
-  if (!fs.existsSync(UPLOAD_DIR)) {
-    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-  }
-
-  // Configure Multer storage
-  const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, UPLOAD_DIR);
-    },
-    filename: (req, file, cb) => {
-      // Generate unique filename to avoid overwrites
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-      const ext = path.extname(file.originalname);
-      const fileName = `${uniqueSuffix}${ext}`;
-      cb(null, fileName);
-    }
-  });
+  // Use memory storage for Vercel deployment temporarily to avoid EROFS error
+  const storage = multer.memoryStorage();
 
   return multer({
     storage,

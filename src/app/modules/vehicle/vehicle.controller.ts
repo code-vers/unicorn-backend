@@ -10,8 +10,9 @@ const createVehicle: RequestHandler = catchAsync(async (req, res) => {
   const images: IVehicleImagePayload[] = [];
   if (req.files && Array.isArray(req.files)) {
     req.files.forEach((file, index) => {
+      const fileName = file.filename || file.originalname;
       images.push({
-        path: `/uploads/vehicles/${file.filename}`,
+        path: `/uploads/vehicles/${fileName}`,
         order: index
       });
     });
@@ -60,8 +61,9 @@ const updateVehicle: RequestHandler = catchAsync(async (req, res) => {
   if (req.files && Array.isArray(req.files) && req.files.length > 0) {
     newImages = [];
     req.files.forEach((file, index) => {
+      const fileName = file.filename || file.originalname;
       newImages!.push({
-        path: `/uploads/vehicles/${file.filename}`,
+        path: `/uploads/vehicles/${fileName}`,
         order: index
       });
     });
