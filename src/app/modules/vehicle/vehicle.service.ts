@@ -15,7 +15,8 @@ import type {
 
 const VEHICLE_INCLUDE = {
   location: { select: { id: true, name: true, city: true } },
-  images: { select: { id: true, path: true, order: true }, orderBy: { order: 'asc' } }
+  images: { select: { id: true, path: true, order: true }, orderBy: { order: 'asc' } },
+  pricing: true
 } satisfies Prisma.VehicleInclude;
 
 const createVehicle = async (
@@ -68,9 +69,10 @@ const getAllVehicles = async (query: IVehicleQuery) => {
 
   // Handle custom price range filters
   if (query.minPrice || query.maxPrice) {
-    whereClause.dailyRate = {};
-    if (query.minPrice) whereClause.dailyRate.gte = Number(query.minPrice);
-    if (query.maxPrice) whereClause.dailyRate.lte = Number(query.maxPrice);
+    const dailyRateFilter: any = {};
+    if (query.minPrice) dailyRateFilter.gte = Number(query.minPrice);
+    if (query.maxPrice) dailyRateFilter.lte = Number(query.maxPrice);
+    whereClause.pricing = { is: { dailyRate: dailyRateFilter } };
   }
 
   const vehicles = await prisma.vehicle.findMany({

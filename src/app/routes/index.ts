@@ -4,6 +4,7 @@ import { AuthRoutes } from '../modules/auth/auth.routes';
 import { DriverRoutes } from '../modules/driver/driver.routes';
 import { DropOffChargeRoutes } from '../modules/dropOffCharge/dropOffCharge.routes';
 import { LocationRoutes } from '../modules/location/location.routes';
+import { PricingRoutes } from '../modules/pricing/pricing.routes';
 import { UserRoutes } from '../modules/user/user.routes';
 import { VehicleRoutes } from '../modules/vehicle/vehicle.routes';
 import { SettingRoutes } from '../modules/setting/setting.routes';
@@ -39,6 +40,11 @@ const moduleRoutes = [
   {
     path: '/settings',
     route: SettingRoutes
+  },
+
+  {
+    path: '/pricing',
+    route: PricingRoutes
   },
   {
     path: '/bookings',

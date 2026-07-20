@@ -12,13 +12,7 @@ import type {
   IBookingUpdateStatusPayload
 } from './booking.interface';
 
-// Hardcoded Add-on prices based on requirements (can be moved to SystemSettings later)
-const ADDONS_PRICES = {
-  GPS: 0,
-  FULL_INSURANCE: 65,
-  ADDITIONAL_DRIVER: 45,
-  CHILD_SEAT: 0
-};
+
 
 const generateReferenceId = () => {
   const currentYear = new Date().getFullYear();
@@ -39,20 +33,40 @@ const calculateCosts = async (payload: IBookingCalculatePayload) => {
 
   // Fetch Vehicle
   const vehicle = await prisma.vehicle.findUnique({
-    where: { id: payload.vehicleId }
+    where: { id: payload.vehicleId },
+    include: { pricing: true }
   });
 
   if (!vehicle) {
     throw new AppError(404, 'Vehicle not found');
   }
 
+  const globalPricing = await prisma.pricing.findFirst({
+    where: { vehicleId: null }
+  });
+
+  const pricing = vehicle.pricing || globalPricing;
+  
+  if (!pricing) {
+    throw new AppError(500, 'Pricing configuration is missing in the system.');
+  }
+
   // Calculate base rental cost
-  // Fallback logic for weekly/monthly could be added here. Using dailyRate for now.
-  let rentalCost = vehicle.dailyRate.toNumber() * durationDays;
-  if (durationDays >= 30 && vehicle.monthlyRate) {
-    rentalCost = vehicle.monthlyRate.toNumber() * (durationDays / 30);
-  } else if (durationDays >= 7 && vehicle.weeklyRate) {
-    rentalCost = vehicle.weeklyRate.toNumber() * (durationDays / 7);
+  let rentalCost = pricing.dailyRate.toNumber() * durationDays;
+  if (durationDays >= 30 && pricing.monthlyRate.toNumber() > 0) {
+    rentalCost = pricing.monthlyRate.toNumber() * (durationDays / 30);
+  } else if (durationDays >= 7 && pricing.weeklyRate.toNumber() > 0) {
+    rentalCost = pricing.weeklyRate.toNumber() * (durationDays / 7);
+  }
+  
+  // Apply Discount if applicable
+  let discountAmount = 0;
+  if (pricing.discountPercentage.toNumber() > 0) {
+    const isDiscountValid = !pricing.discountValidUntil || new Date(pricing.discountValidUntil) >= new Date();
+    if (isDiscountValid) {
+       discountAmount = rentalCost * (pricing.discountPercentage.toNumber() / 100);
+       rentalCost -= discountAmount;
+    }
   }
 
   // Fetch Drop-off charge
@@ -78,10 +92,10 @@ const calculateCosts = async (payload: IBookingCalculatePayload) => {
 
   // Calculate Add-ons
   let addonsCost = 0;
-  if (payload.hasGps) addonsCost += ADDONS_PRICES.GPS;
-  if (payload.hasFullInsurance) addonsCost += ADDONS_PRICES.FULL_INSURANCE;
-  if (payload.hasAdditionalDriver) addonsCost += ADDONS_PRICES.ADDITIONAL_DRIVER;
-  if (payload.hasChildSeat) addonsCost += ADDONS_PRICES.CHILD_SEAT;
+  if (payload.hasGps) addonsCost += pricing.gpsCharge.toNumber();
+  if (payload.hasFullInsurance) addonsCost += pricing.fullInsuranceCharge.toNumber();
+  if (payload.hasAdditionalDriver) addonsCost += pricing.additionalDriverCharge.toNumber();
+  if (payload.hasChildSeat) addonsCost += pricing.childSeatCharge.toNumber();
 
   // Fetch Tax Percentage
   let taxPercentage = 16.0;

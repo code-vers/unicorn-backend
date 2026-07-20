@@ -142,9 +142,7 @@ model Vehicle {
   features        String[]
 
   // Pricing
-  dailyRate       Decimal             @db.Decimal(10, 2)
-  weeklyRate      Decimal?            @db.Decimal(10, 2)
-  monthlyRate     Decimal?            @db.Decimal(10, 2)
+  pricing         Pricing?
 
   // Status
   status          VehicleStatus       @default(ACTIVE)
@@ -417,4 +415,38 @@ enum PaymentMethod {
   AIRTEL
   CARD
   PESAPAL
+}
+
+model Pricing {
+  id                        String    @id @default(uuid())
+  vehicleId                 String?   @unique
+  vehicle                   Vehicle?  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  
+  dailyRate                 Decimal   @db.Decimal(10, 2)
+  weeklyRate                Decimal   @db.Decimal(10, 2)
+  monthlyRate               Decimal   @db.Decimal(10, 2)
+  
+  selfDriveRate             Decimal   @db.Decimal(10, 2)
+  chauffeurRate             Decimal   @db.Decimal(10, 2)
+  seasonalMultiplier        Decimal   @db.Decimal(10, 2) @default(1.0)
+  
+  extraDayCharge            Decimal   @db.Decimal(10, 2)
+  lateReturnHourlyCharge    Decimal   @db.Decimal(10, 2)
+  securityDeposit           Decimal   @db.Decimal(10, 2)
+  deliveryCollectionCharge  Decimal   @db.Decimal(10, 2)
+  airportPickupDropCharge   Decimal   @db.Decimal(10, 2)
+  extraMileageCharge        Decimal   @db.Decimal(10, 2)
+  
+  gpsCharge                 Decimal   @db.Decimal(10, 2) @default(10.00)
+  fullInsuranceCharge       Decimal   @db.Decimal(10, 2) @default(20.00)
+  additionalDriverCharge    Decimal   @db.Decimal(10, 2) @default(15.00)
+  childSeatCharge           Decimal   @db.Decimal(10, 2) @default(5.00)
+
+  discountPercentage        Decimal   @db.Decimal(5, 2) @default(0.00)
+  discountValidUntil        DateTime?
+  
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+
+  @@map("pricings")
 }
