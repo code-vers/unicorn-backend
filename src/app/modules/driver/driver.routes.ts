@@ -2,20 +2,20 @@ import { Router } from 'express';
 
 import auth from '../../middlewares/auth';
 import validateRequest from '../../middlewares/validateRequest';
-import { createUploader } from '../../utils/upload';
+// import { createUploader } from '../../utils/upload';
 import { DriverController } from './driver.controller';
 import { DriverValidation } from './driver.validation';
 
 const router = Router();
-const upload = createUploader('drivers');
+// const upload = createUploader('drivers');
 
 router.post(
   '/',
   auth('ADMIN'),
-  upload.fields([
-    { name: 'photo', maxCount: 1 },
-    { name: 'licensePhoto', maxCount: 1 }
-  ]),
+  // upload.fields([
+  //   { name: 'photo', maxCount: 1 },
+  //   { name: 'licensePhoto', maxCount: 1 }
+  // ]),
   validateRequest(DriverValidation.create),
   DriverController.createDriver
 );
@@ -27,10 +27,10 @@ router.get('/:id', auth('ADMIN'), DriverController.getDriverById);
 router.patch(
   '/:id',
   auth('ADMIN'),
-  upload.fields([
-    { name: 'photo', maxCount: 1 },
-    { name: 'licensePhoto', maxCount: 1 }
-  ]),
+  // upload.fields([
+  //   { name: 'photo', maxCount: 1 },
+  //   { name: 'licensePhoto', maxCount: 1 }
+  // ]),
   validateRequest(DriverValidation.update),
   DriverController.updateDriver
 );

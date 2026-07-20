@@ -56,11 +56,12 @@ const uploadDocument: RequestHandler = catchAsync(async (req, res) => {
   const userId = req.user!.userId;
   
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-  if (!files?.document?.[0]) {
-    throw new AppError(400, 'Document file is required.');
-  }
+  // if (!files?.document?.[0]) {
+  //   throw new AppError(400, 'Document file is required.');
+  // }
 
-  const documentPath = `/uploads/documents/${files.document[0].filename}`;
+  // const documentPath = `/uploads/documents/${files.document[0].filename}`;
+  const documentPath = `/uploads/documents/dummy-file.pdf`; // Vercel temporary fix
   const result = await UserService.uploadDocument(userId, req.body, documentPath);
 
   sendResponse(res, {

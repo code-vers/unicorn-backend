@@ -1,14 +1,14 @@
 import { Router } from 'express';
 
 import auth from '../../middlewares/auth';
-import { createUploader } from '../../utils/upload';
+// import { createUploader } from '../../utils/upload';
 import validateRequest from '../../middlewares/validateRequest';
 import { UserController } from './user.controller';
 import { UserValidation } from './user.validation';
 
 const router = Router();
-const profileUploader = createUploader('profiles');
-const documentUploader = createUploader('documents');
+// const profileUploader = createUploader('profiles');
+// const documentUploader = createUploader('documents');
 
 // ==========================================
 // User / Customer Endpoints
@@ -19,7 +19,7 @@ router.get('/me', auth('USER', 'ADMIN'), UserController.getMe);
 router.patch(
   '/profile',
   auth('USER', 'ADMIN'),
-  profileUploader.fields([{ name: 'photo', maxCount: 1 }]),
+  // profileUploader.fields([{ name: 'photo', maxCount: 1 }]),
   validateRequest(UserValidation.updateProfile),
   UserController.updateProfile
 );
@@ -34,7 +34,7 @@ router.patch(
 router.post(
   '/documents',
   auth('USER', 'ADMIN'),
-  documentUploader.fields([{ name: 'document', maxCount: 1 }]),
+  // documentUploader.fields([{ name: 'document', maxCount: 1 }]),
   validateRequest(UserValidation.uploadDocument),
   UserController.uploadDocument
 );
