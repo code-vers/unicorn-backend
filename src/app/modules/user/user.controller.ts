@@ -27,7 +27,8 @@ const updateProfile: RequestHandler = catchAsync(async (req, res) => {
 
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
   if (files?.photo?.[0]) {
-    photoUrl = `/uploads/profiles/${files.photo[0].filename}`;
+    const fileName = files.photo[0].filename || files.photo[0].originalname;
+    photoUrl = `/uploads/profiles/${fileName}`;
   }
 
   const result = await UserService.updateProfile(userId, req.body, photoUrl);
@@ -60,7 +61,8 @@ const uploadDocument: RequestHandler = catchAsync(async (req, res) => {
     throw new AppError(400, 'Document file is required.');
   }
 
-  const documentPath = `/uploads/documents/${files.document[0].filename}`;
+  const fileName = files.document[0].filename || files.document[0].originalname;
+  const documentPath = `/uploads/documents/${fileName}`;
   const result = await UserService.uploadDocument(userId, req.body, documentPath);
 
   sendResponse(res, {

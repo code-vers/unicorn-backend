@@ -11,10 +11,12 @@ const createDriver: RequestHandler = catchAsync(async (req, res) => {
 
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
   if (files?.photo?.[0]) {
-    photoUrl = `/uploads/drivers/${files.photo[0].filename}`;
+    const fileName = files.photo[0].filename || files.photo[0].originalname;
+    photoUrl = `/uploads/drivers/${fileName}`;
   }
   if (files?.licensePhoto?.[0]) {
-    licensePhotoUrl = `/uploads/drivers/${files.licensePhoto[0].filename}`;
+    const fileName = files.licensePhoto[0].filename || files.licensePhoto[0].originalname;
+    licensePhotoUrl = `/uploads/drivers/${fileName}`;
   }
 
   const result = await DriverService.createDriver(req.body, photoUrl, licensePhotoUrl);
@@ -59,10 +61,12 @@ const updateDriver: RequestHandler = catchAsync(async (req, res) => {
 
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
   if (files?.photo?.[0]) {
-    newPhotoUrl = `/uploads/drivers/${files.photo[0].filename}`;
+    const fileName = files.photo[0].filename || files.photo[0].originalname;
+    newPhotoUrl = `/uploads/drivers/${fileName}`;
   }
   if (files?.licensePhoto?.[0]) {
-    newLicensePhotoUrl = `/uploads/drivers/${files.licensePhoto[0].filename}`;
+    const fileName = files.licensePhoto[0].filename || files.licensePhoto[0].originalname;
+    newLicensePhotoUrl = `/uploads/drivers/${fileName}`;
   }
 
   const result = await DriverService.updateDriver(id, req.body, newPhotoUrl, newLicensePhotoUrl);
