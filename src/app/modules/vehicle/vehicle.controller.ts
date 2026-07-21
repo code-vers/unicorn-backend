@@ -1,5 +1,6 @@
 import type { RequestHandler } from 'express';
 
+import AppError from '../../errors/AppError';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import type { IVehicleImagePayload, IVehicleQuery } from './vehicle.interface';
@@ -30,6 +31,12 @@ const createVehicle: RequestHandler = catchAsync(async (req, res) => {
 
 const getAllVehicles: RequestHandler = catchAsync(async (req, res) => {
   const query = req.query as unknown as IVehicleQuery;
+  
+  // Hide INACTIVE vehicles from regular users
+  if (req.user && req.user.role === 'USER') {
+    query.status = 'ACTIVE';
+  }
+
   const result = await VehicleService.getAllVehicles(query);
 
   sendResponse(res, {
@@ -44,6 +51,10 @@ const getAllVehicles: RequestHandler = catchAsync(async (req, res) => {
 const getVehicleById: RequestHandler = catchAsync(async (req, res) => {
   const id = req.params['id'] as string;
   const result = await VehicleService.getVehicleById(id);
+
+  if (req.user && req.user.role === 'USER' && result.status === 'INACTIVE') {
+    throw new AppError(404, 'Vehicle not found.');
+  }
 
   sendResponse(res, {
     statusCode: 200,
