@@ -227,7 +227,8 @@ const getMyBookings = async (userId: string, query: any) => {
     include: {
       vehicle: true,
       pickupLocation: true,
-      dropOffLocation: true
+      dropOffLocation: true,
+      assignedDriver: true
     }
   };
 
@@ -257,7 +258,8 @@ const getBookingById = async (id: string, userId?: string, role?: string) => {
       dropOffLocation: true,
       driverDetails: true,
       billingInfo: true,
-      payments: true
+      payments: true,
+      assignedDriver: true
     }
   });
 
@@ -380,7 +382,8 @@ const getAllBookings = async (query: any) => {
       vehicle: true,
       pickupLocation: true,
       dropOffLocation: true,
-      driverDetails: true
+      driverDetails: true,
+      assignedDriver: true
     }
   };
 
