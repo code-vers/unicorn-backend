@@ -81,6 +81,13 @@ const getAllVehicles = async (query: IVehicleQuery) => {
     include: VEHICLE_INCLUDE
   });
 
+  const globalPricing = await prisma.pricing.findFirst({ where: { vehicleId: null } });
+
+  const vehiclesWithPricing = vehicles.map(v => ({
+    ...v,
+    pricing: v.pricing || globalPricing
+  }));
+
   const total = await prisma.vehicle.count({ where: whereClause });
 
   return {
@@ -89,7 +96,7 @@ const getAllVehicles = async (query: IVehicleQuery) => {
       page: Number(query.page) || 1,
       limit: Number(query.limit) || 10
     },
-    data: vehicles
+    data: vehiclesWithPricing
   };
 };
 
@@ -101,6 +108,11 @@ const getVehicleById = async (id: string) => {
 
   if (!vehicle) {
     throw new AppError(404, 'Vehicle not found.');
+  }
+
+  if (!vehicle.pricing) {
+    const globalPricing = await prisma.pricing.findFirst({ where: { vehicleId: null } });
+    (vehicle as any).pricing = globalPricing;
   }
 
   return vehicle;
@@ -167,6 +179,11 @@ const updateVehicle = async (
       data: payload,
       include: VEHICLE_INCLUDE
     });
+
+    if (!updatedVehicle.pricing) {
+      const globalPricing = await tx.pricing.findFirst({ where: { vehicleId: null } });
+      (updatedVehicle as any).pricing = globalPricing;
+    }
 
     return updatedVehicle;
   });
