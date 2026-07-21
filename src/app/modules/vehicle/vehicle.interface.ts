@@ -75,9 +75,6 @@ export interface IVehicleResponse {
   luggageCapacity: number | null;
   description: string | null;
   features: string[];
-  dailyRate: number;
-  weeklyRate: number | null;
-  monthlyRate: number | null;
   status: VehicleStatus;
   availability: VehicleAvailability;
   isFeatured: boolean;
