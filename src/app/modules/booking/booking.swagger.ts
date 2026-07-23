@@ -56,7 +56,9 @@ const CreateBookingSchema = CalculateBookingSchema.extend({
     firstName: z.string(),
     lastName: z.string(),
     email: z.string(),
-    phone: z.string()
+    phone: z.string(),
+    dateOfBirth: z.string().optional(),
+    message: z.string().optional()
   }),
   billingInfo: z.object({
     firstName: z.string(),
@@ -65,7 +67,10 @@ const CreateBookingSchema = CalculateBookingSchema.extend({
     phone: z.string(),
     address: z.string(),
     city: z.string(),
-    country: z.string()
+    state: z.string().optional(),
+    country: z.string(),
+    zipCode: z.string().optional(),
+    description: z.string().optional()
   })
 });
 
