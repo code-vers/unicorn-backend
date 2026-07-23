@@ -2,6 +2,8 @@ import { BookingStatus, PaymentStatus, Prisma } from '@prisma/client';
 import crypto from 'crypto';
 
 import AppError from '../../errors/AppError';
+import { NotificationService } from '../notification/notification.service';
+import { sendEmail } from '../../utils/email';
 import { QueryBuilder } from '../../utils/QueryBuilder';
 import prisma from '../../utils/prisma';
 import type {
@@ -198,7 +200,7 @@ const createBooking = async (userId: string, payload: IBookingCreatePayload) => 
     return booking;
   });
 
-  return prisma.booking.findUnique({
+  const finalBooking = await prisma.booking.findUnique({
     where: { id: result.id },
     include: {
       vehicle: true,
@@ -208,6 +210,28 @@ const createBooking = async (userId: string, payload: IBookingCreatePayload) => 
       billingInfo: true
     }
   });
+
+  // Trigger Notifications & Emails
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (user && finalBooking) {
+    const title = 'Booking Created Successfully';
+    const message = `Your booking ${finalBooking.referenceId} for ${finalBooking.vehicle.name} has been created and is pending confirmation.`;
+    
+    await NotificationService.createNotification({
+      userId,
+      title,
+      message,
+      type: 'BOOKING'
+    });
+
+    await sendEmail(
+      user.email,
+      title,
+      `<p>Hello ${user.name},</p><p>${message}</p>`
+    );
+  }
+
+  return finalBooking;
 };
 
 const getMyBookings = async (userId: string, query: any) => {
@@ -310,6 +334,26 @@ const addPayment = async (id: string, payload: IPaymentPayload, paymentType = 'I
 
     return { payment, booking: updatedBooking };
   });
+
+  // Payment Notification
+  const user = await prisma.user.findUnique({ where: { id: booking.userId } });
+  if (user) {
+    const title = 'Payment Received';
+    const message = `We have received a payment of ${payload.amount} for booking ${booking.referenceId}.`;
+    
+    await NotificationService.createNotification({
+      userId: booking.userId,
+      title,
+      message,
+      type: 'PAYMENT'
+    });
+
+    await sendEmail(
+      user.email,
+      title,
+      `<p>Hello ${user.name},</p><p>${message}</p>`
+    );
+  }
 
   return result;
 };
@@ -435,6 +479,33 @@ const updateBookingStatus = async (id: string, payload: IBookingUpdateStatusPayl
 
     return updatedBooking;
   });
+
+  // Status Update & Driver Assignment Notification
+  const user = await prisma.user.findUnique({ where: { id: booking.userId } });
+  if (user) {
+    let title = `Booking Status Updated`;
+    let message = `Your booking ${booking.referenceId} status has been updated to ${payload.status}.`;
+    let type: any = 'BOOKING';
+
+    if (payload.assignedDriverId && !booking.assignedDriverId) {
+      title = 'Driver Assigned to Your Booking';
+      message = `A driver has been assigned to your booking ${booking.referenceId}. Please check your dashboard for details.`;
+      type = 'CHAUFFEUR';
+    }
+
+    await NotificationService.createNotification({
+      userId: booking.userId,
+      title,
+      message,
+      type
+    });
+
+    await sendEmail(
+      user.email,
+      title,
+      `<p>Hello ${user.name},</p><p>${message}</p>`
+    );
+  }
 
   return result;
 };

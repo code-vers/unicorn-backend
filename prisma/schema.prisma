@@ -20,6 +20,7 @@ model User {
   profile              UserProfile?
   documents            UserDocument[]
   bookings             Booking[]
+  notifications        Notification[]
 
   @@map("users")
 }
@@ -393,6 +394,27 @@ model Payment {
   updatedAt         DateTime @updatedAt
 
   @@map("payments")
+}
+
+enum NotificationType {
+  BOOKING
+  PAYMENT
+  SYSTEM
+  CHAUFFEUR
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      NotificationType @default(SYSTEM)
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@map("notifications")
 }
 
 enum BookingStatus {
