@@ -49,6 +49,10 @@ export interface IVehicleQuery {
   limit?: number | string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
+  pickupDate?: string;
+  dropOffDate?: string;
+  featureIds?: string | string[];
+  seatingCapacity?: string | number;
 }
 
 export interface IVehicleImageResponse {
@@ -74,7 +78,7 @@ export interface IVehicleResponse {
   seatingCapacity: number;
   luggageCapacity: number | null;
   description: string | null;
-  features: string[];
+  features: any[];
   status: VehicleStatus;
   availability: VehicleAvailability;
   isFeatured: boolean;

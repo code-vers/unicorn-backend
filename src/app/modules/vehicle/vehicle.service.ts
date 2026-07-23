@@ -16,7 +16,8 @@ import type {
 const VEHICLE_INCLUDE = {
   location: { select: { id: true, name: true, city: true } },
   images: { select: { id: true, path: true, order: true }, orderBy: { order: 'asc' } },
-  pricing: true
+  pricing: true,
+  features: true
 } satisfies Prisma.VehicleInclude;
 
 const createVehicle = async (
@@ -33,8 +34,14 @@ const createVehicle = async (
   }
 
   const result = await prisma.$transaction(async (tx) => {
+    const { features, ...vehicleData } = payload;
     const vehicle = await tx.vehicle.create({
-      data: payload
+      data: {
+        ...vehicleData,
+        features: features && features.length > 0 ? {
+          connect: features.map(id => ({ id }))
+        } : undefined
+      }
     });
 
     if (images.length > 0) {
@@ -73,6 +80,43 @@ const getAllVehicles = async (query: IVehicleQuery) => {
     if (query.minPrice) dailyRateFilter.gte = Number(query.minPrice);
     if (query.maxPrice) dailyRateFilter.lte = Number(query.maxPrice);
     whereClause.pricing = { is: { dailyRate: dailyRateFilter } };
+  }
+
+  // Handle seat capacity (6+)
+  if (query.seatingCapacity) {
+    if (Number(query.seatingCapacity) >= 6) {
+      whereClause.seatingCapacity = { gte: 6 };
+    } else {
+      whereClause.seatingCapacity = Number(query.seatingCapacity);
+    }
+  }
+
+  // Handle feature IDs
+  if (query.featureIds) {
+    const featureIdsArray = Array.isArray(query.featureIds) ? query.featureIds : [query.featureIds];
+    whereClause.features = {
+      some: {
+        id: { in: featureIdsArray }
+      }
+    };
+  }
+
+  // Handle Date Availability
+  if (query.pickupDate && query.dropOffDate) {
+    const pickupDate = new Date(query.pickupDate);
+    const dropOffDate = new Date(query.dropOffDate);
+
+    whereClause.bookings = {
+      none: {
+        bookingStatus: { in: ['CONFIRMED', 'ONGOING'] },
+        OR: [
+          {
+            pickupDate: { lte: dropOffDate },
+            dropOffDate: { gte: pickupDate }
+          }
+        ]
+      }
+    };
   }
 
   const vehicles = await prisma.vehicle.findMany({
@@ -174,9 +218,24 @@ const updateVehicle = async (
       deleteImageFiles(oldImagePaths);
     }
 
+    const { features, ...vehicleData } = payload;
+    
+    // Disconnect all features first if features array is provided
+    if (features !== undefined) {
+      await tx.vehicle.update({
+        where: { id },
+        data: { features: { set: [] } }
+      });
+    }
+
     const updatedVehicle = await tx.vehicle.update({
       where: { id },
-      data: payload,
+      data: {
+        ...vehicleData,
+        features: features ? {
+          connect: features.map(id => ({ id }))
+        } : undefined
+      },
       include: VEHICLE_INCLUDE
     });
 

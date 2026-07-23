@@ -140,7 +140,7 @@ model Vehicle {
   seatingCapacity Int
   luggageCapacity Int?
   description     String?
-  features        String[]
+  features        Feature[]
 
   // Pricing
   pricing         Pricing?
@@ -415,6 +415,21 @@ model Notification {
   updatedAt DateTime         @updatedAt
 
   @@map("notifications")
+}
+
+model Feature {
+  id              String    @id @default(uuid())
+  name            String
+  description     String?
+  iconUrl         String?
+  charge          Decimal   @default(0)
+  isAddon         Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  vehicles        Vehicle[]
+
+  @@map("features")
 }
 
 enum BookingStatus {

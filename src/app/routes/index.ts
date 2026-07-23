@@ -9,6 +9,7 @@ import { UserRoutes } from '../modules/user/user.routes';
 import { VehicleRoutes } from '../modules/vehicle/vehicle.routes';
 import { SettingRoutes } from '../modules/setting/setting.routes';
 import { BookingRoutes } from '../modules/booking/booking.routes';
+import { FeatureRoutes } from '../modules/feature/feature.routes';
 import { NotificationRoutes } from '../modules/notification/notification.routes';
 
 const router = Router();
@@ -54,6 +55,10 @@ const moduleRoutes = [
   {
     path: '/notifications',
     route: NotificationRoutes
+  },
+  {
+    path: '/features',
+    route: FeatureRoutes
   }
 ];
 
