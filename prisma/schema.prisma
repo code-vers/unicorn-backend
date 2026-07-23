@@ -21,6 +21,7 @@ model User {
   documents            UserDocument[]
   bookings             Booking[]
   notifications        Notification[]
+  supportTickets       SupportTicket[]
 
   @@map("users")
 }
@@ -438,6 +439,29 @@ enum BookingStatus {
   ONGOING
   COMPLETED
   CANCELLED
+}
+
+enum SupportStatus {
+  PENDING
+  RESOLVED
+  CLOSED
+}
+
+model SupportTicket {
+  id            String         @id @default(uuid())
+  userId        String?
+  user          User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  name          String
+  email         String
+  phone         String?
+  subject       String
+  message       String
+  attachmentUrl String?
+  status        SupportStatus  @default(PENDING)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@map("support_tickets")
 }
 
 enum PaymentStatus {
