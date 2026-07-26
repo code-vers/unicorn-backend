@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import auth from '../../middlewares/auth';
+import optionalAuth from '../../middlewares/optionalAuth';
 import validateRequest from '../../middlewares/validateRequest';
 import { createUploader } from '../../utils/upload';
 import { VehicleController } from './vehicle.controller';
@@ -17,9 +18,11 @@ router.post(
   VehicleController.createVehicle
 );
 
-router.get('/', auth('USER', 'ADMIN'), VehicleController.getAllVehicles);
+// Public: anyone can browse vehicles (homepage, product listing)
+router.get('/', optionalAuth, VehicleController.getAllVehicles);
 
-router.get('/:id', auth('USER', 'ADMIN'), VehicleController.getVehicleById);
+// Public: anyone can view a single vehicle detail page
+router.get('/:id', optionalAuth, VehicleController.getVehicleById);
 
 router.patch(
   '/:id',

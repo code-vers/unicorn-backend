@@ -74,6 +74,7 @@ const getAllVehicles = async (query: IVehicleQuery) => {
     maxPrice,
     featureIds,
     seatingCapacity,
+    isFeatured,
     ...prismaQuery
   } = query;
 
@@ -86,6 +87,11 @@ const getAllVehicles = async (query: IVehicleQuery) => {
   const builtQuery = queryBuilder.build();
 
   const whereClause: Prisma.VehicleWhereInput = { ...builtQuery.where };
+
+  // Handle boolean isFeatured
+  if (isFeatured !== undefined) {
+    whereClause.isFeatured = isFeatured === 'true' || isFeatured === true;
+  }
 
   // Handle custom price range filters
   if (minPrice || maxPrice) {
@@ -115,20 +121,36 @@ const getAllVehicles = async (query: IVehicleQuery) => {
     };
   }
 
-  // Handle Date Availability
+  // Handle Date Availability & Active-Booking Exclusion
   if (pickupDate && dropOffDate) {
+    // Specific date range provided — exclude vehicles with overlapping active bookings
     const pickupDateObj = new Date(pickupDate);
     const dropOffDateObj = new Date(dropOffDate);
 
     whereClause.bookings = {
       none: {
-        bookingStatus: { in: ['CONFIRMED', 'ONGOING'] },
+        bookingStatus: { in: ['PENDING', 'CONFIRMED', 'ONGOING'] },
         OR: [
           {
             pickupDate: { lte: dropOffDateObj },
             dropOffDate: { gte: pickupDateObj }
           }
         ]
+      }
+    };
+  } else if (
+    query.status === 'ACTIVE' &&
+    query.availability === 'AVAILABLE'
+  ) {
+    // Public mode with NO dates — only exclude vehicles that have an active booking
+    // overlapping with the EXACT CURRENT MOMENT.
+    // If a car is booked for tomorrow, it should still appear on the homepage today.
+    const now = new Date();
+    whereClause.bookings = {
+      none: {
+        bookingStatus: { in: ['PENDING', 'CONFIRMED', 'ONGOING'] },
+        pickupDate: { lte: now },
+        dropOffDate: { gte: now }
       }
     };
   }

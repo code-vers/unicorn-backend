@@ -32,10 +32,15 @@ const createVehicle: RequestHandler = catchAsync(async (req, res) => {
 const getAllVehicles: RequestHandler = catchAsync(async (req, res) => {
   const query = req.query as unknown as IVehicleQuery;
   
-  // Hide INACTIVE vehicles from regular users
-  if (req.user && req.user.role === 'USER') {
+  if (!req.user) {
+    // Guest / public request — only show ACTIVE + AVAILABLE vehicles
+    query.status = 'ACTIVE';
+    query.availability = 'AVAILABLE';
+  } else if (req.user.role === 'USER') {
+    // Logged-in customer — only show ACTIVE, but all availabilities
     query.status = 'ACTIVE';
   }
+  // ADMIN — no restrictions, see everything
 
   const result = await VehicleService.getAllVehicles(query);
 
@@ -52,7 +57,8 @@ const getVehicleById: RequestHandler = catchAsync(async (req, res) => {
   const id = req.params['id'] as string;
   const result = await VehicleService.getVehicleById(id);
 
-  if (req.user && req.user.role === 'USER' && result.status === 'INACTIVE') {
+  // Guests and regular users cannot see inactive vehicles
+  if (result.status === 'INACTIVE' && req.user?.role !== 'ADMIN') {
     throw new AppError(404, 'Vehicle not found.');
   }
 

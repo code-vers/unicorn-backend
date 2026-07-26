@@ -465,18 +465,6 @@ const updateBookingStatus = async (id: string, payload: IBookingUpdateStatusPayl
       }
     });
 
-    if (payload.status === 'ONGOING') {
-      await tx.vehicle.update({
-        where: { id: booking.vehicleId },
-        data: { availability: 'RENTED' }
-      });
-    } else if (payload.status === 'COMPLETED' || payload.status === 'CANCELLED') {
-      await tx.vehicle.update({
-        where: { id: booking.vehicleId },
-        data: { availability: 'AVAILABLE' }
-      });
-    }
-
     return updatedBooking;
   });
 
