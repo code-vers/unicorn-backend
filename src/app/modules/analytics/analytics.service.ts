@@ -96,11 +96,15 @@ const getRevenueTrends = async () => {
     trendsMap[monthName] = { month: monthName, revenue: 0, expenses: 0, net: 0 };
   }
 
+  // Get dynamic expense ratio from settings
+  const expenseRatioSetting = await prisma.systemSetting.findUnique({ where: { key: 'EXPENSE_RATIO_PERCENTAGE' } });
+  const expenseRatio = expenseRatioSetting ? (Number(expenseRatioSetting.value) / 100) : 0.40;
+
   payments.forEach((p: any) => {
     const monthName = monthNames[p.createdAt.getMonth()];
     if (trendsMap[monthName]) {
       trendsMap[monthName].revenue += Number(p.amount);
-      trendsMap[monthName].expenses += Number(p.amount) * 0.4; // Dummy expense 40%
+      trendsMap[monthName].expenses += Number(p.amount) * expenseRatio;
       trendsMap[monthName].net = trendsMap[monthName].revenue - trendsMap[monthName].expenses;
     }
   });
@@ -172,11 +176,14 @@ const getVehicleStats = async () => {
 };
 
 const getPerformance = async () => {
-  // Dummy performance data for now since we don't have a Review model
+  // Get dynamic performance score from settings, removing review count as per user request
+  const scoreSetting = await prisma.systemSetting.findUnique({ where: { key: 'PLATFORM_REVIEW_SCORE' } });
+  const score = scoreSetting ? Number(scoreSetting.value) : 98;
+  const rating = (score / 100) * 5;
+
   return {
-    score: 98,
-    reviewsCount: 154,
-    rating: 4.8,
+    score,
+    rating: Number(rating.toFixed(1)),
   };
 };
 
