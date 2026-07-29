@@ -138,6 +138,23 @@ const createBooking = async (userId: string, payload: IBookingCreatePayload) => 
     exists = await prisma.booking.findUnique({ where: { referenceId } });
   }
 
+  const requestedPickup = new Date(payload.pickupDate);
+  const requestedDropOff = new Date(payload.dropOffDate);
+
+  // Overlap check for vehicle
+  const overlappingVehicleBooking = await prisma.booking.findFirst({
+    where: {
+      vehicleId: payload.vehicleId,
+      bookingStatus: { in: ['PENDING', 'CONFIRMED', 'ONGOING'] },
+      pickupDate: { lte: requestedDropOff },
+      dropOffDate: { gte: requestedPickup }
+    }
+  });
+
+  if (overlappingVehicleBooking) {
+    throw new AppError(409, 'Vehicle is already booked for the selected dates.');
+  }
+
   const result = await prisma.$transaction(async (tx) => {
     const booking = await tx.booking.create({
       data: {
@@ -377,6 +394,24 @@ const modifyBooking = async (id: string, userId: string, payload: IBookingModify
     hasChildSeat: payload.hasChildSeat ?? booking.hasChildSeat
   };
 
+  const requestedPickup = booking.pickupDate;
+  const requestedDropOff = new Date(newDropOffDate);
+
+  // Overlap check for vehicle (excluding this booking)
+  const overlappingVehicleBooking = await prisma.booking.findFirst({
+    where: {
+      id: { not: booking.id },
+      vehicleId: booking.vehicleId,
+      bookingStatus: { in: ['PENDING', 'CONFIRMED', 'ONGOING'] },
+      pickupDate: { lte: requestedDropOff },
+      dropOffDate: { gte: requestedPickup }
+    }
+  });
+
+  if (overlappingVehicleBooking) {
+    throw new AppError(409, 'Vehicle is already booked for the modified dates.');
+  }
+
   const costs = await calculateCosts(calculatePayload);
 
   // Example Modification Fee logic: If modification happens less than 48 hours before pickup
@@ -452,6 +487,22 @@ const updateBookingStatus = async (id: string, payload: IBookingUpdateStatusPayl
   const booking = await prisma.booking.findUnique({ where: { id } });
   if (!booking) throw new AppError(404, 'Booking not found');
 
+  if (payload.assignedDriverId && payload.assignedDriverId !== booking.assignedDriverId) {
+    const overlappingDriverBooking = await prisma.booking.findFirst({
+      where: {
+        id: { not: booking.id },
+        assignedDriverId: payload.assignedDriverId,
+        bookingStatus: { in: ['PENDING', 'CONFIRMED', 'ONGOING'] },
+        pickupDate: { lte: booking.dropOffDate },
+        dropOffDate: { gte: booking.pickupDate }
+      }
+    });
+
+    if (overlappingDriverBooking) {
+      throw new AppError(409, 'Driver is already assigned to another booking during these dates.');
+    }
+  }
+
   const result = await prisma.$transaction(async (tx) => {
     const updatedBooking = await tx.booking.update({
       where: { id },
@@ -464,18 +515,6 @@ const updateBookingStatus = async (id: string, payload: IBookingUpdateStatusPayl
         assignedDriver: true
       }
     });
-
-    if (payload.status === 'ONGOING') {
-      await tx.vehicle.update({
-        where: { id: booking.vehicleId },
-        data: { availability: 'RENTED' }
-      });
-    } else if (payload.status === 'COMPLETED' || payload.status === 'CANCELLED') {
-      await tx.vehicle.update({
-        where: { id: booking.vehicleId },
-        data: { availability: 'AVAILABLE' }
-      });
-    }
 
     return updatedBooking;
   });

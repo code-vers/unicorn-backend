@@ -21,6 +21,8 @@ export interface IDriverQuery {
   searchTerm?: string;
   availability?: DriverAvailability;
   assignedVehicleId?: string;
+  availableFromDate?: string;
+  availableToDate?: string;
   page?: number | string;
   limit?: number | string;
   sortBy?: string;

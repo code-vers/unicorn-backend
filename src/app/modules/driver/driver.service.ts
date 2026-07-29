@@ -12,7 +12,7 @@ import type {
   IUpdateDriverPayload
 } from './driver.interface';
 
-const DRIVER_SELECT = {
+const getDriverSelect = () => ({
   id: true,
   name: true,
   phoneNumber: true,
@@ -32,8 +32,16 @@ const DRIVER_SELECT = {
       brand: true,
       category: true
     }
+  },
+  bookings: {
+    where: {
+      bookingStatus: { in: ['PENDING', 'CONFIRMED', 'ONGOING'] },
+      pickupDate: { lte: new Date() },
+      dropOffDate: { gte: new Date() }
+    },
+    take: 1
   }
-} satisfies Prisma.DriverSelect;
+} satisfies Prisma.DriverSelect);
 
 const createDriver = async (
   payload: ICreateDriverPayload,
@@ -55,7 +63,7 @@ const createDriver = async (
       photoUrl: photoUrl || null,
       licensePhotoUrl: licensePhotoUrl || null
     },
-    select: DRIVER_SELECT
+    select: getDriverSelect()
   });
 
   return driver;
@@ -76,10 +84,23 @@ const getAllDrivers = async (query: IDriverQuery) => {
     isDeleted: false
   };
 
+  if (query.availableFromDate && query.availableToDate) {
+    const pickupDateObj = new Date(query.availableFromDate);
+    const dropOffDateObj = new Date(query.availableToDate);
+
+    whereClause.bookings = {
+      none: {
+        bookingStatus: { in: ['PENDING', 'CONFIRMED', 'ONGOING'] },
+        pickupDate: { lte: dropOffDateObj },
+        dropOffDate: { gte: pickupDateObj }
+      }
+    };
+  }
+
   const drivers = await prisma.driver.findMany({
     ...builtQuery,
     where: whereClause,
-    select: DRIVER_SELECT
+    select: getDriverSelect()
   });
 
   const total = await prisma.driver.count({ where: whereClause });
@@ -97,7 +118,7 @@ const getAllDrivers = async (query: IDriverQuery) => {
 const getDriverById = async (id: string) => {
   const driver = await prisma.driver.findFirst({
     where: { id, isDeleted: false },
-    select: DRIVER_SELECT
+    select: getDriverSelect()
   });
 
   if (!driver) {
@@ -163,7 +184,7 @@ const updateDriver = async (
   const updatedDriver = await prisma.driver.update({
     where: { id },
     data: dataToUpdate,
-    select: DRIVER_SELECT
+    select: getDriverSelect()
   });
 
   return updatedDriver;
@@ -181,7 +202,7 @@ const updateAvailability = async (id: string, payload: IUpdateDriverAvailability
   const updatedDriver = await prisma.driver.update({
     where: { id },
     data: { availability: payload.availability },
-    select: DRIVER_SELECT
+    select: getDriverSelect()
   });
 
   return updatedDriver;

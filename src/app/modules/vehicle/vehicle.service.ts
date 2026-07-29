@@ -64,7 +64,21 @@ const createVehicle = async (
 };
 
 const getAllVehicles = async (query: IVehicleQuery) => {
-  const queryBuilder = new QueryBuilder(query)
+  // Destructure custom fields that need special Prisma handling.
+  // These are NOT direct scalar fields on the Vehicle model, so they must
+  // NEVER be passed to QueryBuilder — it would blindly put them in `where`.
+  const {
+    pickupDate,
+    dropOffDate,
+    minPrice,
+    maxPrice,
+    featureIds,
+    seatingCapacity,
+    isFeatured,
+    ...prismaQuery
+  } = query;
+
+  const queryBuilder = new QueryBuilder(prismaQuery)
     .search(['name', 'brand'])
     .filter()
     .sort()
@@ -74,26 +88,32 @@ const getAllVehicles = async (query: IVehicleQuery) => {
 
   const whereClause: Prisma.VehicleWhereInput = { ...builtQuery.where };
 
+  // Handle boolean isFeatured
+  if (isFeatured !== undefined) {
+    whereClause.isFeatured = isFeatured === 'true' || isFeatured === true;
+  }
+
   // Handle custom price range filters
-  if (query.minPrice || query.maxPrice) {
+  if (minPrice || maxPrice) {
     const dailyRateFilter: any = {};
-    if (query.minPrice) dailyRateFilter.gte = Number(query.minPrice);
-    if (query.maxPrice) dailyRateFilter.lte = Number(query.maxPrice);
+    if (minPrice) dailyRateFilter.gte = Number(minPrice);
+    if (maxPrice) dailyRateFilter.lte = Number(maxPrice);
     whereClause.pricing = { is: { dailyRate: dailyRateFilter } };
   }
 
   // Handle seat capacity (6+)
-  if (query.seatingCapacity) {
-    if (Number(query.seatingCapacity) >= 6) {
+  if (seatingCapacity) {
+    if (Number(seatingCapacity) >= 6) {
       whereClause.seatingCapacity = { gte: 6 };
     } else {
-      whereClause.seatingCapacity = Number(query.seatingCapacity);
+      whereClause.seatingCapacity = Number(seatingCapacity);
     }
   }
 
+
   // Handle feature IDs
-  if (query.featureIds) {
-    const featureIdsArray = Array.isArray(query.featureIds) ? query.featureIds : [query.featureIds];
+  if (featureIds) {
+    const featureIdsArray = Array.isArray(featureIds) ? featureIds : [featureIds];
     whereClause.features = {
       some: {
         id: { in: featureIdsArray }
@@ -101,23 +121,40 @@ const getAllVehicles = async (query: IVehicleQuery) => {
     };
   }
 
-  // Handle Date Availability
-  if (query.pickupDate && query.dropOffDate) {
-    const pickupDate = new Date(query.pickupDate);
-    const dropOffDate = new Date(query.dropOffDate);
+  // Handle Date Availability & Active-Booking Exclusion
+  if (pickupDate && dropOffDate) {
+    // Specific date range provided — exclude vehicles with overlapping active bookings
+    const pickupDateObj = new Date(pickupDate);
+    const dropOffDateObj = new Date(dropOffDate);
 
     whereClause.bookings = {
       none: {
-        bookingStatus: { in: ['CONFIRMED', 'ONGOING'] },
+        bookingStatus: { in: ['PENDING', 'CONFIRMED', 'ONGOING'] },
         OR: [
           {
-            pickupDate: { lte: dropOffDate },
-            dropOffDate: { gte: pickupDate }
+            pickupDate: { lte: dropOffDateObj },
+            dropOffDate: { gte: pickupDateObj }
           }
         ]
       }
     };
+  } else if (
+    query.status === 'ACTIVE' &&
+    query.availability === 'AVAILABLE'
+  ) {
+    // Public mode with NO dates — only exclude vehicles that have an active booking
+    // overlapping with the EXACT CURRENT MOMENT.
+    // If a car is booked for tomorrow, it should still appear on the homepage today.
+    const now = new Date();
+    whereClause.bookings = {
+      none: {
+        bookingStatus: { in: ['PENDING', 'CONFIRMED', 'ONGOING'] },
+        pickupDate: { lte: now },
+        dropOffDate: { gte: now }
+      }
+    };
   }
+
 
   const vehicles = await prisma.vehicle.findMany({
     ...builtQuery,

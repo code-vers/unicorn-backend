@@ -12,6 +12,9 @@ import { BookingRoutes } from '../modules/booking/booking.routes';
 import { FeatureRoutes } from '../modules/feature/feature.routes';
 import { SupportRoutes } from '../modules/support/support.routes';
 import { NotificationRoutes } from '../modules/notification/notification.routes';
+import { AnalyticsRoutes } from '../modules/analytics/analytics.routes';
+import { ActivityRoutes } from '../modules/activity/activity.routes';
+import { DocumentRoutes } from '../modules/document/document.routes';
 
 const router = Router();
 
@@ -64,6 +67,18 @@ const moduleRoutes = [
   {
     path: '/support',
     route: SupportRoutes
+  },
+  {
+    path: '/analytics',
+    route: AnalyticsRoutes
+  },
+  {
+    path: '/activity',
+    route: ActivityRoutes
+  },
+  {
+    path: '/documents',
+    route: DocumentRoutes
   }
 ];
 
