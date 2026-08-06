@@ -13,6 +13,7 @@ import { registerPricingSwagger } from '../modules/pricing/pricing.swagger';
 import { registerNotificationSwagger } from '../modules/notification/notification.swagger';
 import { registerFeatureSwagger } from '../modules/feature/feature.swagger';
 import { registerSupportSwagger } from '../modules/support/support.swagger';
+import { registerPaymentSwagger } from '../modules/payment/payment.swagger';
 
 // Extend Zod to support OpenAPI
 extendZodWithOpenApi(z);
@@ -39,6 +40,7 @@ registerPricingSwagger(registry, bearerAuth);
 registerNotificationSwagger(registry, bearerAuth);
 registerFeatureSwagger(registry, bearerAuth);
 registerSupportSwagger(registry, bearerAuth);
+registerPaymentSwagger(registry, bearerAuth);
 
 export const generateSwaggerDocs = () => {
   const generator = new OpenApiGeneratorV3(registry.definitions);

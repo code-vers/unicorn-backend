@@ -45,7 +45,12 @@ const config = {
     user: process.env.SMTP_USER ?? '',
     pass: process.env.SMTP_PASS ?? '',
     from: process.env.SMTP_FROM ?? 'noreply@example.com'
-  }
+  },
+  stripe: {
+    secretKey: process.env.STRIPE_SECRET_KEY ?? '',
+    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? ''
+  },
+  frontendUrl: process.env.FRONTEND_URL ?? 'http://localhost:3000'
 };
 
 export default config;

@@ -479,6 +479,7 @@ enum PaymentMethod {
   AIRTEL
   CARD
   PESAPAL
+  STRIPE
 }
 
 model Pricing {

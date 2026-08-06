@@ -29,6 +29,14 @@ const corsOptions: CorsOptions =
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors(corsOptions));
 app.use(cookieParser());
+
+// IMPORTANT: Stripe webhook needs raw body for signature verification.
+// This MUST be registered before express.json() parses the body.
+app.use(
+  '/api/v1/payments/webhook',
+  express.raw({ type: 'application/json' })
+);
+
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 

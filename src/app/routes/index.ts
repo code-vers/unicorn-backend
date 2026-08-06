@@ -15,6 +15,7 @@ import { NotificationRoutes } from '../modules/notification/notification.routes'
 import { AnalyticsRoutes } from '../modules/analytics/analytics.routes';
 import { ActivityRoutes } from '../modules/activity/activity.routes';
 import { DocumentRoutes } from '../modules/document/document.routes';
+import { PaymentRoutes } from '../modules/payment/payment.routes';
 
 const router = Router();
 
@@ -79,6 +80,10 @@ const moduleRoutes = [
   {
     path: '/documents',
     route: DocumentRoutes
+  },
+  {
+    path: '/payments',
+    route: PaymentRoutes
   }
 ];
 
