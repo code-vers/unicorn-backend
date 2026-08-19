@@ -39,11 +39,7 @@ router.post(
   UserController.uploadDocument
 );
 
-router.delete(
-  '/documents/:docId',
-  auth('USER', 'ADMIN'),
-  UserController.deleteDocument
-);
+router.delete('/documents/:docId', auth('USER', 'ADMIN'), UserController.deleteDocument);
 
 // ==========================================
 // Admin Endpoints
@@ -75,6 +71,7 @@ router.patch(
 );
 
 // Support both /:id and bulk body array in root
+router.delete('/bulk', auth('ADMIN'), UserController.deleteUser);
 router.delete('/:id', auth('ADMIN'), UserController.deleteUser);
 router.delete('/', auth('ADMIN'), UserController.deleteUser);
 

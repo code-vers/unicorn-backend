@@ -22,7 +22,7 @@ export const sendEmail = async (to: string, subject: string, html: string): Prom
       html
     });
     logger.info(`Message sent: ${info.messageId}`);
-    
+
     // Preview only available when sending through an Ethereal account
     const previewUrl = nodemailer.getTestMessageUrl(info);
     if (previewUrl) {

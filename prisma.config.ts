@@ -1,7 +1,9 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
 import { defineConfig } from 'prisma/config';
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
+
+dotenv.config({ path: ['.env.local', '.env'], quiet: true });
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',

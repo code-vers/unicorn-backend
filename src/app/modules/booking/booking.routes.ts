@@ -14,40 +14,42 @@ router.post(
 );
 
 router.post(
+  '/checkout',
+  auth('USER'),
+  validateRequest(BookingValidation.createBookingZodSchema),
+  BookingController.createBookingCheckout
+);
+
+router.post(
   '/',
-  auth('USER', 'ADMIN'),
+  auth('ADMIN'),
   validateRequest(BookingValidation.createBookingZodSchema),
   BookingController.createBooking
 );
 
-router.get(
-  '/',
-  auth('ADMIN'),
-  BookingController.getAllBookings
+router.get('/', auth('ADMIN'), BookingController.getAllBookings);
+
+router.get('/my-bookings', auth('USER', 'ADMIN'), BookingController.getMyBookings);
+
+router.post(
+  '/:id/cancel-checkout',
+  auth('USER'),
+  validateRequest(BookingValidation.bookingIdParamsZodSchema),
+  BookingController.cancelBookingCheckout
 );
 
-router.get(
-  '/my-bookings',
-  auth('USER', 'ADMIN'),
-  BookingController.getMyBookings
-);
-
-router.get(
-  '/:id',
-  auth('USER', 'ADMIN'),
-  BookingController.getBookingById
-);
+router.get('/:id', auth('USER', 'ADMIN'), BookingController.getBookingById);
 
 router.patch(
   '/:id/payment',
-  auth('USER', 'ADMIN'),
+  auth('ADMIN'),
   validateRequest(BookingValidation.paymentZodSchema),
   BookingController.addPayment
 );
 
 router.post(
   '/:id/extend-payment',
-  auth('USER', 'ADMIN'),
+  auth('ADMIN'),
   validateRequest(BookingValidation.paymentZodSchema),
   BookingController.extendPayment
 );

@@ -12,12 +12,8 @@ router.patch('/:id/status', auth('ADMIN'), DocumentController.updateDocumentStat
 router.delete('/:id', auth('ADMIN'), DocumentController.deleteDocument);
 
 // User routes
-router.post(
-  '/',
-  auth('USER', 'ADMIN'),
-  upload.single('file'),
-  DocumentController.uploadDocument
-);
+router.post('/', auth('USER', 'ADMIN'), upload.single('file'), DocumentController.uploadDocument);
 router.get('/my-documents', auth('USER', 'ADMIN'), DocumentController.getMyDocuments);
+router.get('/:id/file', auth('USER', 'ADMIN'), DocumentController.downloadDocument);
 
 export const DocumentRoutes = router;

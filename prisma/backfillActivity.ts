@@ -6,14 +6,14 @@ async function main() {
   await prisma.activityLog.deleteMany({});
 
   console.log('Backfilling activity logs from real data...');
-  
+
   // 1. Backfill Bookings
   const bookings = await prisma.booking.findMany({
     take: 20,
     orderBy: { createdAt: 'desc' },
     include: {
       user: true,
-      vehicle: true,
+      vehicle: true
     }
   });
 
@@ -29,7 +29,7 @@ async function main() {
         description: `${booking.user.name} — ${booking.vehicle.brand} ${booking.vehicle.name}`,
         status,
         createdAt: booking.createdAt,
-        updatedAt: booking.updatedAt,
+        updatedAt: booking.updatedAt
       }
     });
   }
@@ -48,7 +48,7 @@ async function main() {
   for (const payment of payments) {
     let status: ActivityStatus = ActivityStatus.PENDING;
     let title = 'Payment Pending';
-    
+
     if (payment.paymentStatus === 'SUCCESS') {
       status = ActivityStatus.COMPLETED;
       title = 'Payment Received';
@@ -64,7 +64,7 @@ async function main() {
         description: `${payment.booking.user.name} — Amount: $${payment.amount}`,
         status,
         createdAt: payment.createdAt,
-        updatedAt: payment.updatedAt,
+        updatedAt: payment.updatedAt
       }
     });
   }

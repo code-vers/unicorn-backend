@@ -31,7 +31,7 @@ const createVehicle: RequestHandler = catchAsync(async (req, res) => {
 
 const getAllVehicles: RequestHandler = catchAsync(async (req, res) => {
   const query = req.query as unknown as IVehicleQuery;
-  
+
   if (!req.user) {
     // Guest / public request — only show ACTIVE + AVAILABLE vehicles
     query.status = 'ACTIVE';
@@ -109,7 +109,8 @@ const updateAvailability: RequestHandler = catchAsync(async (req, res) => {
 });
 
 const deleteVehicle: RequestHandler = catchAsync(async (req, res) => {
-  const idOrIds = Array.isArray(req.body) && req.body.length > 0 ? req.body : req.params['id'] as string;
+  const idOrIds =
+    Array.isArray(req.body) && req.body.length > 0 ? req.body : (req.params['id'] as string);
   await VehicleService.deleteVehicle(idOrIds);
 
   sendResponse(res, {

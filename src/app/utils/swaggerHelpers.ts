@@ -71,7 +71,10 @@ export const createErrorResponse = (description: string, message: string) => {
 // Common Errors
 export const Error400 = createErrorResponse('Bad Request / Validation Error', 'Validation failed.');
 export const Error401 = createErrorResponse('Unauthorized', 'You are not authorized.');
-export const Error403 = createErrorResponse('Forbidden', 'You do not have permission to access this resource.');
+export const Error403 = createErrorResponse(
+  'Forbidden',
+  'You do not have permission to access this resource.'
+);
 export const Error404 = createErrorResponse('Not Found', 'Resource not found.');
 export const Error409 = createErrorResponse('Conflict', 'Resource already exists.');
 export const Error500 = createErrorResponse('Internal Server Error', 'Something went wrong.');

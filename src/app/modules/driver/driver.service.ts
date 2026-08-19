@@ -1,10 +1,11 @@
 import type { Prisma } from '@prisma/client';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import AppError from '../../errors/AppError';
 import { QueryBuilder } from '../../utils/QueryBuilder';
 import prisma from '../../utils/prisma';
+import { logger } from '../../utils/logger';
 import type {
   ICreateDriverPayload,
   IDriverQuery,
@@ -12,36 +13,37 @@ import type {
   IUpdateDriverPayload
 } from './driver.interface';
 
-const getDriverSelect = () => ({
-  id: true,
-  name: true,
-  phoneNumber: true,
-  whatsappNumber: true,
-  photoUrl: true,
-  licensePhotoUrl: true,
-  licenseDetails: true,
-  availability: true,
-  notes: true,
-  assignedVehicleId: true,
-  createdAt: true,
-  updatedAt: true,
-  assignedVehicle: {
-    select: {
-      id: true,
-      name: true,
-      brand: true,
-      category: true
-    }
-  },
-  bookings: {
-    where: {
-      bookingStatus: { in: ['PENDING', 'CONFIRMED', 'ONGOING'] },
-      pickupDate: { lte: new Date() },
-      dropOffDate: { gte: new Date() }
+const getDriverSelect = () =>
+  ({
+    id: true,
+    name: true,
+    phoneNumber: true,
+    whatsappNumber: true,
+    photoUrl: true,
+    licensePhotoUrl: true,
+    licenseDetails: true,
+    availability: true,
+    notes: true,
+    assignedVehicleId: true,
+    createdAt: true,
+    updatedAt: true,
+    assignedVehicle: {
+      select: {
+        id: true,
+        name: true,
+        brand: true,
+        category: true
+      }
     },
-    take: 1
-  }
-} satisfies Prisma.DriverSelect);
+    bookings: {
+      where: {
+        bookingStatus: { in: ['PENDING', 'CONFIRMED', 'ONGOING'] },
+        pickupDate: { lte: new Date() },
+        dropOffDate: { gte: new Date() }
+      },
+      take: 1
+    }
+  }) satisfies Prisma.DriverSelect;
 
 const createDriver = async (
   payload: ICreateDriverPayload,
@@ -135,7 +137,7 @@ const deletePhotoFile = (photoPath: string) => {
     try {
       fs.unlinkSync(fullPath);
     } catch (err) {
-      console.error(`Failed to delete driver photo: ${fullPath}`, err);
+      logger.error(`Failed to delete driver photo: ${fullPath}`, err);
     }
   }
 };

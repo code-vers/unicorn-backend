@@ -19,12 +19,21 @@ const register: RequestHandler = catchAsync(async (req, res) => {
 
 const login: RequestHandler = catchAsync(async (req, res) => {
   const result = await AuthService.login(req.body);
-  const { refreshToken, ...data } = result;
+  const { refreshToken, accessToken, ...data } = result;
+
+  res.cookie('accessToken', accessToken, {
+    secure: config.nodeEnv === 'production',
+    httpOnly: true,
+    sameSite: 'lax',
+    domain: config.cookieDomain,
+    maxAge: 24 * 60 * 60 * 1000
+  });
 
   res.cookie('refreshToken', refreshToken, {
     secure: config.nodeEnv === 'production',
     httpOnly: true,
-    sameSite: 'strict',
+    sameSite: 'lax',
+    domain: config.cookieDomain,
     maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
   });
 
@@ -32,7 +41,7 @@ const login: RequestHandler = catchAsync(async (req, res) => {
     statusCode: 200,
     success: true,
     message: 'User logged in successfully.',
-    data: data
+    data
   });
 });
 
@@ -40,19 +49,34 @@ const refreshToken: RequestHandler = catchAsync(async (req, res) => {
   const { refreshToken } = req.cookies;
   const result = await AuthService.refreshToken(refreshToken);
 
+  res.cookie('accessToken', result.accessToken, {
+    secure: config.nodeEnv === 'production',
+    httpOnly: true,
+    sameSite: 'lax',
+    domain: config.cookieDomain,
+    maxAge: 24 * 60 * 60 * 1000
+  });
+
   sendResponse(res, {
     statusCode: 200,
     success: true,
     message: 'Access token generated successfully.',
-    data: result
+    data: null
   });
 });
 
 const logout: RequestHandler = catchAsync(async (_req, res) => {
+  res.clearCookie('accessToken', {
+    secure: config.nodeEnv === 'production',
+    httpOnly: true,
+    sameSite: 'lax',
+    domain: config.cookieDomain
+  });
   res.clearCookie('refreshToken', {
     secure: config.nodeEnv === 'production',
     httpOnly: true,
-    sameSite: 'strict'
+    sameSite: 'lax',
+    domain: config.cookieDomain
   });
 
   sendResponse(res, {

@@ -17,7 +17,10 @@ const DriverSchema = z.object({
   phoneNumber: z.string().openapi({ example: '+254700000000' }),
   whatsappNumber: z.string().openapi({ example: '+254700000000' }),
   photoUrl: z.string().nullable().openapi({ example: '/uploads/drivers/1784003658668-image.jpg' }),
-  licensePhotoUrl: z.string().nullable().openapi({ example: '/uploads/drivers/1784003658669-license.jpg' }),
+  licensePhotoUrl: z
+    .string()
+    .nullable()
+    .openapi({ example: '/uploads/drivers/1784003658669-license.jpg' }),
   licenseDetails: z.string().nullable(),
   availability: z.enum(['AVAILABLE', 'ASSIGNED', 'UNAVAILABLE']),
   notes: z.string().nullable(),
@@ -65,7 +68,11 @@ export const registerDriverSwagger = (
       }
     },
     responses: {
-      201: createSuccessResponse(DriverSchema, 'Driver created successfully', 'Driver created successfully.'),
+      201: createSuccessResponse(
+        DriverSchema,
+        'Driver created successfully',
+        'Driver created successfully.'
+      ),
       400: Error400,
       401: Error401,
       403: Error403,
@@ -92,7 +99,11 @@ export const registerDriverSwagger = (
       })
     },
     responses: {
-      200: createPaginatedResponse(DriverSchema, 'Drivers retrieved successfully', 'Drivers retrieved successfully.'),
+      200: createPaginatedResponse(
+        DriverSchema,
+        'Drivers retrieved successfully',
+        'Drivers retrieved successfully.'
+      ),
       401: Error401,
       403: Error403,
       500: Error500
@@ -112,7 +123,11 @@ export const registerDriverSwagger = (
       })
     },
     responses: {
-      200: createSuccessResponse(DriverSchema, 'Driver retrieved successfully', 'Driver retrieved successfully.'),
+      200: createSuccessResponse(
+        DriverSchema,
+        'Driver retrieved successfully',
+        'Driver retrieved successfully.'
+      ),
       401: Error401,
       403: Error403,
       404: Error404,
@@ -140,7 +155,11 @@ export const registerDriverSwagger = (
       }
     },
     responses: {
-      200: createSuccessResponse(DriverSchema, 'Driver updated successfully', 'Driver updated successfully.'),
+      200: createSuccessResponse(
+        DriverSchema,
+        'Driver updated successfully',
+        'Driver updated successfully.'
+      ),
       400: Error400,
       401: Error401,
       403: Error403,
@@ -169,7 +188,11 @@ export const registerDriverSwagger = (
       }
     },
     responses: {
-      200: createSuccessResponse(DriverSchema, 'Driver availability updated successfully', 'Driver availability updated successfully.'),
+      200: createSuccessResponse(
+        DriverSchema,
+        'Driver availability updated successfully',
+        'Driver availability updated successfully.'
+      ),
       400: Error400,
       401: Error401,
       403: Error403,
@@ -187,18 +210,31 @@ export const registerDriverSwagger = (
     security: [{ [bearerAuth.name]: [] }],
     request: {
       params: z.object({
-        id: z.string().openapi({ description: 'Driver ID (can be anything if sending array in body)', example: 'uuid-1234' })
+        id: z.string().openapi({
+          description: 'Driver ID (can be anything if sending array in body)',
+          example: 'uuid-1234'
+        })
       }),
       body: {
         content: {
           'application/json': {
-            schema: z.array(z.string()).optional().openapi({ description: 'Array of Driver IDs for bulk delete', example: ['uuid-1234', 'uuid-5678'] })
+            schema: z
+              .array(z.string())
+              .optional()
+              .openapi({
+                description: 'Array of Driver IDs for bulk delete',
+                example: ['uuid-1234', 'uuid-5678']
+              })
           }
         }
       }
     },
     responses: {
-      200: createSuccessResponse(z.null(), 'Driver deleted successfully', 'Driver deleted successfully.'),
+      200: createSuccessResponse(
+        z.null(),
+        'Driver deleted successfully',
+        'Driver deleted successfully.'
+      ),
       401: Error401,
       403: Error403,
       404: Error404,

@@ -1,34 +1,26 @@
 import { Router } from 'express';
 import auth from '../../middlewares/auth';
+import validateRequest from '../../middlewares/validateRequest';
 import { PaymentController } from './payment.controller';
+import { PaymentValidation } from './payment.validation';
 
 const router = Router();
 
 /**
- * POST /api/v1/payments/create-checkout-session
+ * POST /api/v1/payments/create-extension-session
  * Auth: USER or ADMIN
  * Body: { bookingId: string }
  * Returns: { url: string, sessionId: string }
  * Frontend redirects user to `url`.
  */
 router.post(
-  '/create-checkout-session',
-  auth('USER', 'ADMIN'),
-  PaymentController.createCheckoutSession
-);
-
-/**
- * POST /api/v1/payments/create-extension-session
- * Auth: USER or ADMIN
- * Body: { bookingId: string, extensionAmount: number }
- * Returns: { url: string, sessionId: string }
- * Frontend redirects user to `url`.
- */
-router.post(
   '/create-extension-session',
   auth('USER', 'ADMIN'),
+  validateRequest(PaymentValidation.createExtensionCheckoutSession),
   PaymentController.createExtensionCheckoutSession
 );
+
+router.get('/my-payments', auth('USER', 'ADMIN'), PaymentController.getMyPayments);
 
 /**
  * POST /api/v1/payments/webhook

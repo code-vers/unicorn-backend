@@ -22,13 +22,13 @@ const isAuthUser = (payload: unknown): payload is IAuthUser => {
  */
 const optionalAuth: RequestHandler = (req, _res, next) => {
   const authHeader = req.headers.authorization;
+  const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+  const token = bearerToken ?? req.cookies?.accessToken;
 
-  if (!authHeader?.startsWith('Bearer ')) {
+  if (!token) {
     // No token — proceed as guest (req.user remains undefined)
     return next();
   }
-
-  const token = authHeader.split(' ')[1];
 
   try {
     const decoded = jwt.verify(token, config.jwt.accessSecret);

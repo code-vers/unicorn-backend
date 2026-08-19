@@ -3,7 +3,9 @@ import { z } from 'zod';
 const register = z.object({
   body: z
     .object({
-      name: z.string({ message: 'Name is required.' }).min(2, 'Name must be at least 2 characters long.'),
+      name: z
+        .string({ message: 'Name is required.' })
+        .min(2, 'Name must be at least 2 characters long.'),
       email: z
         .string({ message: 'Email is required.' })
         .trim()

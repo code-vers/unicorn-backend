@@ -41,9 +41,10 @@ Use this whenever the user changes dates, locations, or add-ons to show the live
 }
 ```
 
-### Step 2.3: Confirm Booking
-**Endpoint:** `POST /api/v1/bookings` (Auth Required)
-Submit the complete booking along with driver details and billing info.
+### Step 2.3: Start Mandatory Payment Checkout
+**Endpoint:** `POST /api/v1/bookings/checkout` (USER Auth Required)
+Submit the complete booking along with driver details and billing info. The response contains
+`data.booking` and `data.checkout.url`; redirect the browser to that URL immediately.
 ```json
 {
   "vehicleId": "uuid",
@@ -68,6 +69,11 @@ Submit the complete booking along with driver details and billing info.
 }
 ```
 
+The vehicle is held for about 30 minutes while Stripe Checkout is open. The booking is confirmed
+only after the signed Stripe webhook verifies full payment. Cancelling or allowing checkout to
+expire releases the hold; there is no customer pay-later endpoint. `POST /api/v1/bookings` is
+reserved for administrators.
+
 ---
 
 ## 3. Manage & Extend Bookings
@@ -85,12 +91,12 @@ When the user selects a new return date or adds an extra driver.
 *Note: This automatically recalculates the `totalAmount` and changes `paymentStatus` to `PENDING`.*
 
 ### Step 3.2: Pay & Extend
-**Endpoint:** `POST /api/v1/bookings/{id}/extend-payment` (Auth Required)
-Process the payment for the extra balance generated in Step 3.1.
+**Endpoint:** `POST /api/v1/payments/create-extension-session` (Auth Required)
+Create Stripe Checkout for the extra balance generated in Step 3.1, then redirect to the returned
+`data.url`.
 ```json
 {
-  "paymentMethod": "MPESA",
-  "amount": 181.40 
+  "bookingId": "uuid"
 }
 ```
 

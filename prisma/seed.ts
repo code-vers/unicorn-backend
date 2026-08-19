@@ -9,6 +9,9 @@ async function main() {
 
   const adminEmail = config.admin.email;
   const adminPassword = config.admin.password;
+  if (!adminEmail || !adminPassword) {
+    throw new Error('ADMIN_EMAIL and ADMIN_PASSWORD are required to seed the administrator.');
+  }
 
   const hashedPassword = await bcrypt.hash(adminPassword, config.bcryptSaltRounds);
 

@@ -58,7 +58,11 @@ export const registerLocationSwagger = (
       }
     },
     responses: {
-      201: createSuccessResponse(LocationSchema, 'Location created successfully', 'Location created successfully.'),
+      201: createSuccessResponse(
+        LocationSchema,
+        'Location created successfully',
+        'Location created successfully.'
+      ),
       400: Error400,
       401: Error401,
       403: Error403,
@@ -76,7 +80,10 @@ export const registerLocationSwagger = (
     security: [{ [bearerAuth.name]: [] }],
     request: {
       query: z.object({
-        searchTerm: z.string().optional().openapi({ description: 'Search by name, address, or city' }),
+        searchTerm: z
+          .string()
+          .optional()
+          .openapi({ description: 'Search by name, address, or city' }),
         city: z.string().optional().openapi({ example: 'Nairobi' }),
         locationType: z
           .enum(['OFFICE', 'AIRPORT', 'HOTEL', 'PORT', 'SHOWROOM', 'OTHER'])
@@ -89,7 +96,11 @@ export const registerLocationSwagger = (
       })
     },
     responses: {
-      200: createPaginatedResponse(LocationSchema, 'Locations retrieved successfully', 'Locations retrieved successfully.'),
+      200: createPaginatedResponse(
+        LocationSchema,
+        'Locations retrieved successfully',
+        'Locations retrieved successfully.'
+      ),
       401: Error401,
       500: Error500
     }
@@ -108,7 +119,11 @@ export const registerLocationSwagger = (
       })
     },
     responses: {
-      200: createSuccessResponse(LocationSchema, 'Location retrieved successfully', 'Location retrieved successfully.'),
+      200: createSuccessResponse(
+        LocationSchema,
+        'Location retrieved successfully',
+        'Location retrieved successfully.'
+      ),
       401: Error401,
       404: Error404,
       500: Error500
@@ -135,7 +150,11 @@ export const registerLocationSwagger = (
       }
     },
     responses: {
-      200: createSuccessResponse(LocationSchema, 'Location updated successfully', 'Location updated successfully.'),
+      200: createSuccessResponse(
+        LocationSchema,
+        'Location updated successfully',
+        'Location updated successfully.'
+      ),
       400: Error400,
       401: Error401,
       403: Error403,
@@ -154,18 +173,31 @@ export const registerLocationSwagger = (
     security: [{ [bearerAuth.name]: [] }],
     request: {
       params: z.object({
-        id: z.string().openapi({ description: 'Location ID (can be anything if sending array in body)', example: 'uuid-1234' })
+        id: z.string().openapi({
+          description: 'Location ID (can be anything if sending array in body)',
+          example: 'uuid-1234'
+        })
       }),
       body: {
         content: {
           'application/json': {
-            schema: z.array(z.string()).optional().openapi({ description: 'Array of Location IDs for bulk delete', example: ['uuid-1234', 'uuid-5678'] })
+            schema: z
+              .array(z.string())
+              .optional()
+              .openapi({
+                description: 'Array of Location IDs for bulk delete',
+                example: ['uuid-1234', 'uuid-5678']
+              })
           }
         }
       }
     },
     responses: {
-      200: createSuccessResponse(z.null(), 'Location(s) deleted successfully', 'Location(s) deleted successfully.'),
+      200: createSuccessResponse(
+        z.null(),
+        'Location(s) deleted successfully',
+        'Location(s) deleted successfully.'
+      ),
       401: Error401,
       403: Error403,
       404: Error404,

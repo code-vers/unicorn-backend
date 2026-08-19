@@ -13,15 +13,8 @@ router.put(
   PricingController.savePricing
 );
 
-router.get(
-  '/',
-  PricingController.getPricing
-);
+router.get('/', PricingController.getPricing);
 
-router.delete(
-  '/:vehicleId',
-  auth('ADMIN'),
-  PricingController.deletePricing
-);
+router.delete('/:vehicleId', auth('ADMIN'), PricingController.deletePricing);
 
 export const PricingRoutes = router;

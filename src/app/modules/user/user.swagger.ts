@@ -2,7 +2,16 @@ import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
 import { UserValidation } from './user.validation';
-import { createErrorResponse, createPaginatedResponse, createSuccessResponse, Error400, Error401, Error403, Error404, Error500 } from '../../utils/swaggerHelpers';
+import {
+  createErrorResponse,
+  createPaginatedResponse,
+  createSuccessResponse,
+  Error400,
+  Error401,
+  Error403,
+  Error404,
+  Error500
+} from '../../utils/swaggerHelpers';
 
 export const registerUserSwagger = (registry: OpenAPIRegistry, bearerAuth: any) => {
   const UserDocumentSchema = z.object({
@@ -42,7 +51,11 @@ export const registerUserSwagger = (registry: OpenAPIRegistry, bearerAuth: any) 
     summary: 'Get current user profile',
     security: [{ [bearerAuth.name]: [] }],
     responses: {
-      200: createSuccessResponse(UserProfileSchema, 'User profile retrieved successfully', 'User profile retrieved successfully.'),
+      200: createSuccessResponse(
+        UserProfileSchema,
+        'User profile retrieved successfully',
+        'User profile retrieved successfully.'
+      ),
       401: Error401,
       404: Error404,
       500: Error500
@@ -69,14 +82,21 @@ export const registerUserSwagger = (registry: OpenAPIRegistry, bearerAuth: any) 
               emergencyContactEmail: z.string().optional(),
               emergencyContactPhone: z.string().optional(),
               emergencyContactRelation: z.string().optional(),
-              photo: z.any().openapi({ type: 'string', format: 'binary', description: 'Profile Photo' }).optional()
+              photo: z
+                .any()
+                .openapi({ type: 'string', format: 'binary', description: 'Profile Photo' })
+                .optional()
             })
           }
         }
       }
     },
     responses: {
-      200: createSuccessResponse(UserProfileSchema, 'Profile updated successfully', 'Profile updated successfully.'),
+      200: createSuccessResponse(
+        UserProfileSchema,
+        'Profile updated successfully',
+        'Profile updated successfully.'
+      ),
       400: Error400,
       401: Error401,
       500: Error500
@@ -100,7 +120,11 @@ export const registerUserSwagger = (registry: OpenAPIRegistry, bearerAuth: any) 
       }
     },
     responses: {
-      200: createSuccessResponse(z.null(), 'Password changed successfully', 'Password changed successfully.'),
+      200: createSuccessResponse(
+        z.null(),
+        'Password changed successfully',
+        'Password changed successfully.'
+      ),
       400: Error400,
       401: Error401,
       500: Error500
@@ -121,14 +145,22 @@ export const registerUserSwagger = (registry: OpenAPIRegistry, bearerAuth: any) 
             schema: z.object({
               type: z.enum(['DRIVERS_LICENSE', 'PASSPORT_ID', 'KRA_PIN', 'INSURANCE', 'OTHER']),
               name: z.string().optional(),
-              document: z.any().openapi({ type: 'string', format: 'binary', description: 'Document File (PDF or Image)' })
+              document: z.any().openapi({
+                type: 'string',
+                format: 'binary',
+                description: 'Document File (PDF or Image)'
+              })
             })
           }
         }
       }
     },
     responses: {
-      201: createSuccessResponse(UserDocumentSchema, 'Document uploaded successfully', 'Document uploaded successfully.'),
+      201: createSuccessResponse(
+        UserDocumentSchema,
+        'Document uploaded successfully',
+        'Document uploaded successfully.'
+      ),
       400: Error400,
       401: Error401,
       500: Error500
@@ -148,7 +180,11 @@ export const registerUserSwagger = (registry: OpenAPIRegistry, bearerAuth: any) 
       })
     },
     responses: {
-      200: createSuccessResponse(z.null(), 'Document deleted successfully', 'Document deleted successfully.'),
+      200: createSuccessResponse(
+        z.null(),
+        'Document deleted successfully',
+        'Document deleted successfully.'
+      ),
       400: Error400,
       401: Error401,
       403: Error403,
@@ -176,7 +212,11 @@ export const registerUserSwagger = (registry: OpenAPIRegistry, bearerAuth: any) 
       })
     },
     responses: {
-      200: createPaginatedResponse(UserProfileSchema, 'Users retrieved successfully', 'Users retrieved successfully.'),
+      200: createPaginatedResponse(
+        UserProfileSchema,
+        'Users retrieved successfully',
+        'Users retrieved successfully.'
+      ),
       401: Error401,
       403: Error403,
       500: Error500
@@ -196,7 +236,11 @@ export const registerUserSwagger = (registry: OpenAPIRegistry, bearerAuth: any) 
       })
     },
     responses: {
-      200: createSuccessResponse(UserProfileSchema, 'User retrieved successfully', 'User retrieved successfully.'),
+      200: createSuccessResponse(
+        UserProfileSchema,
+        'User retrieved successfully',
+        'User retrieved successfully.'
+      ),
       401: Error401,
       403: Error403,
       404: Error404,
@@ -224,7 +268,11 @@ export const registerUserSwagger = (registry: OpenAPIRegistry, bearerAuth: any) 
       }
     },
     responses: {
-      200: createSuccessResponse(UserProfileSchema, 'User updated successfully', 'User updated successfully.'),
+      200: createSuccessResponse(
+        UserProfileSchema,
+        'User updated successfully',
+        'User updated successfully.'
+      ),
       400: Error400,
       401: Error401,
       403: Error403,
@@ -253,7 +301,11 @@ export const registerUserSwagger = (registry: OpenAPIRegistry, bearerAuth: any) 
       }
     },
     responses: {
-      200: createSuccessResponse(UserDocumentSchema, 'Document status updated successfully', 'Document status updated successfully.'),
+      200: createSuccessResponse(
+        UserDocumentSchema,
+        'Document status updated successfully',
+        'Document status updated successfully.'
+      ),
       400: Error400,
       401: Error401,
       403: Error403,
@@ -282,7 +334,11 @@ export const registerUserSwagger = (registry: OpenAPIRegistry, bearerAuth: any) 
       }
     },
     responses: {
-      200: createSuccessResponse(UserProfileSchema, 'User role updated successfully', 'User role updated successfully.'),
+      200: createSuccessResponse(
+        UserProfileSchema,
+        'User role updated successfully',
+        'User role updated successfully.'
+      ),
       400: Error400,
       401: Error401,
       403: Error403,
@@ -304,7 +360,11 @@ export const registerUserSwagger = (registry: OpenAPIRegistry, bearerAuth: any) 
       })
     },
     responses: {
-      200: createSuccessResponse(z.null(), 'User deleted successfully', 'User deleted successfully.'),
+      200: createSuccessResponse(
+        z.null(),
+        'User deleted successfully',
+        'User deleted successfully.'
+      ),
       401: Error401,
       403: Error403,
       404: Error404,
@@ -329,7 +389,11 @@ export const registerUserSwagger = (registry: OpenAPIRegistry, bearerAuth: any) 
       }
     },
     responses: {
-      200: createSuccessResponse(z.null(), 'Users deleted successfully', 'Users deleted successfully.'),
+      200: createSuccessResponse(
+        z.null(),
+        'Users deleted successfully',
+        'Users deleted successfully.'
+      ),
       401: Error401,
       403: Error403,
       404: Error404,

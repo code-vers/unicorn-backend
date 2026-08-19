@@ -26,7 +26,15 @@ const LocationBasicSchema = z.object({
 const VehicleSchema = z.object({
   id: z.string().openapi({ example: 'veh-1234' }),
   name: z.string().openapi({ example: 'Toyota Camry' }),
-  category: z.enum(['SALOON', 'SUV', 'VAN', 'LUXURY', 'FOUR_WD', 'CHAUFFEUR_DRIVEN', 'SELF_DRIVEN']),
+  category: z.enum([
+    'SALOON',
+    'SUV',
+    'VAN',
+    'LUXURY',
+    'FOUR_WD',
+    'CHAUFFEUR_DRIVEN',
+    'SELF_DRIVEN'
+  ]),
   brand: z.string().openapi({ example: 'Toyota' }),
   year: z.number().openapi({ example: 2022 }),
   transmission: z.enum(['AUTOMATIC', 'MANUAL']),
@@ -47,7 +55,15 @@ const VehicleSchema = z.object({
 
 const CreateVehicleMultipartSchema = z.object({
   name: z.string().openapi({ example: 'Toyota Camry' }),
-  category: z.enum(['SALOON', 'SUV', 'VAN', 'LUXURY', 'FOUR_WD', 'CHAUFFEUR_DRIVEN', 'SELF_DRIVEN']),
+  category: z.enum([
+    'SALOON',
+    'SUV',
+    'VAN',
+    'LUXURY',
+    'FOUR_WD',
+    'CHAUFFEUR_DRIVEN',
+    'SELF_DRIVEN'
+  ]),
   brand: z.string().openapi({ example: 'Toyota' }),
   year: z.number().openapi({ example: 2022 }),
   transmission: z.enum(['AUTOMATIC', 'MANUAL']),
@@ -55,12 +71,18 @@ const CreateVehicleMultipartSchema = z.object({
   seatingCapacity: z.number().openapi({ example: 5 }),
   luggageCapacity: z.number().optional().openapi({ example: 3 }),
   description: z.string().optional(),
-  features: z.array(z.string()).optional().openapi({ example: ['AC', 'Bluetooth'] }),
+  features: z
+    .array(z.string())
+    .optional()
+    .openapi({ example: ['AC', 'Bluetooth'] }),
   status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
   availability: z.enum(['AVAILABLE', 'RENTED', 'MAINTENANCE']).optional(),
   isFeatured: z.boolean().optional(),
   locationId: z.string().openapi({ example: 'loc-uuid-123' }),
-  images: z.any().openapi({ type: 'array', items: { type: 'string', format: 'binary' } }).optional()
+  images: z
+    .any()
+    .openapi({ type: 'array', items: { type: 'string', format: 'binary' } })
+    .optional()
 });
 
 const UpdateVehicleMultipartSchema = CreateVehicleMultipartSchema.partial();
@@ -90,7 +112,11 @@ export const registerVehicleSwagger = (
       }
     },
     responses: {
-      201: createSuccessResponse(VehicleSchema, 'Vehicle created successfully', 'Vehicle created successfully.'),
+      201: createSuccessResponse(
+        VehicleSchema,
+        'Vehicle created successfully',
+        'Vehicle created successfully.'
+      ),
       400: Error400,
       401: Error401,
       403: Error403,
@@ -108,7 +134,9 @@ export const registerVehicleSwagger = (
     request: {
       query: z.object({
         searchTerm: z.string().optional(),
-        category: z.enum(['SALOON', 'SUV', 'VAN', 'LUXURY', 'FOUR_WD', 'CHAUFFEUR_DRIVEN', 'SELF_DRIVEN']).optional(),
+        category: z
+          .enum(['SALOON', 'SUV', 'VAN', 'LUXURY', 'FOUR_WD', 'CHAUFFEUR_DRIVEN', 'SELF_DRIVEN'])
+          .optional(),
         transmission: z.enum(['AUTOMATIC', 'MANUAL']).optional(),
         fuelType: z.enum(['PETROL', 'DIESEL', 'ELECTRIC', 'HYBRID']).optional(),
         locationId: z.string().optional(),
@@ -128,7 +156,11 @@ export const registerVehicleSwagger = (
       })
     },
     responses: {
-      200: createPaginatedResponse(VehicleSchema, 'Vehicles retrieved successfully', 'Vehicles retrieved successfully.'),
+      200: createPaginatedResponse(
+        VehicleSchema,
+        'Vehicles retrieved successfully',
+        'Vehicles retrieved successfully.'
+      ),
       401: Error401,
       500: Error500
     }
@@ -147,7 +179,11 @@ export const registerVehicleSwagger = (
       })
     },
     responses: {
-      200: createSuccessResponse(VehicleSchema, 'Vehicle retrieved successfully', 'Vehicle retrieved successfully.'),
+      200: createSuccessResponse(
+        VehicleSchema,
+        'Vehicle retrieved successfully',
+        'Vehicle retrieved successfully.'
+      ),
       401: Error401,
       404: Error404,
       500: Error500
@@ -174,7 +210,11 @@ export const registerVehicleSwagger = (
       }
     },
     responses: {
-      200: createSuccessResponse(VehicleSchema, 'Vehicle updated successfully', 'Vehicle updated successfully.'),
+      200: createSuccessResponse(
+        VehicleSchema,
+        'Vehicle updated successfully',
+        'Vehicle updated successfully.'
+      ),
       400: Error400,
       401: Error401,
       403: Error403,
@@ -203,7 +243,11 @@ export const registerVehicleSwagger = (
       }
     },
     responses: {
-      200: createSuccessResponse(VehicleSchema, 'Vehicle availability updated successfully', 'Vehicle availability updated successfully.'),
+      200: createSuccessResponse(
+        VehicleSchema,
+        'Vehicle availability updated successfully',
+        'Vehicle availability updated successfully.'
+      ),
       400: Error400,
       401: Error401,
       403: Error403,
@@ -221,18 +265,31 @@ export const registerVehicleSwagger = (
     security: [{ [bearerAuth.name]: [] }],
     request: {
       params: z.object({
-        id: z.string().openapi({ description: 'Vehicle ID (can be anything if sending array in body)', example: 'uuid-1234' })
+        id: z.string().openapi({
+          description: 'Vehicle ID (can be anything if sending array in body)',
+          example: 'uuid-1234'
+        })
       }),
       body: {
         content: {
           'application/json': {
-            schema: z.array(z.string()).optional().openapi({ description: 'Array of Vehicle IDs for bulk delete', example: ['uuid-1234', 'uuid-5678'] })
+            schema: z
+              .array(z.string())
+              .optional()
+              .openapi({
+                description: 'Array of Vehicle IDs for bulk delete',
+                example: ['uuid-1234', 'uuid-5678']
+              })
           }
         }
       }
     },
     responses: {
-      200: createSuccessResponse(z.null(), 'Vehicle deleted successfully', 'Vehicle deleted successfully.'),
+      200: createSuccessResponse(
+        z.null(),
+        'Vehicle deleted successfully',
+        'Vehicle deleted successfully.'
+      ),
       401: Error401,
       403: Error403,
       404: Error404,

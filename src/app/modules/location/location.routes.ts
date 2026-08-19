@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import auth from '../../middlewares/auth';
+import optionalAuth from '../../middlewares/optionalAuth';
 import validateRequest from '../../middlewares/validateRequest';
 import { LocationController } from './location.controller';
 import { LocationValidation } from './location.validation';
@@ -14,9 +15,9 @@ router.post(
   LocationController.createLocation
 );
 
-router.get('/', auth('USER', 'ADMIN'), LocationController.getAllLocations);
+router.get('/', optionalAuth, LocationController.getAllLocations);
 
-router.get('/:id', auth('USER', 'ADMIN'), LocationController.getLocationById);
+router.get('/:id', optionalAuth, LocationController.getLocationById);
 
 router.patch(
   '/:id',
@@ -25,6 +26,7 @@ router.patch(
   LocationController.updateLocation
 );
 
+router.delete('/bulk', auth('ADMIN'), LocationController.deleteLocation);
 router.delete('/:id', auth('ADMIN'), LocationController.deleteLocation);
 
 export const LocationRoutes = router;

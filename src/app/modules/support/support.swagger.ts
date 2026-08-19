@@ -56,7 +56,11 @@ export const registerSupportSwagger = (
       }
     },
     responses: {
-      201: createSuccessResponse(SupportTicketSchema, 'Support ticket submitted successfully', 'Support ticket submitted successfully.'),
+      201: createSuccessResponse(
+        SupportTicketSchema,
+        'Support ticket submitted successfully',
+        'Support ticket submitted successfully.'
+      ),
       400: Error400,
       500: Error500
     }
@@ -78,7 +82,11 @@ export const registerSupportSwagger = (
       })
     },
     responses: {
-      200: createPaginatedResponse(SupportTicketSchema, 'Tickets retrieved successfully', 'Tickets retrieved successfully.'),
+      200: createPaginatedResponse(
+        SupportTicketSchema,
+        'Tickets retrieved successfully',
+        'Tickets retrieved successfully.'
+      ),
       401: Error401,
       403: Error403,
       500: Error500
@@ -98,7 +106,11 @@ export const registerSupportSwagger = (
       })
     },
     responses: {
-      200: createSuccessResponse(SupportTicketSchema, 'Ticket retrieved successfully', 'Ticket retrieved successfully.'),
+      200: createSuccessResponse(
+        SupportTicketSchema,
+        'Ticket retrieved successfully',
+        'Ticket retrieved successfully.'
+      ),
       401: Error401,
       403: Error403,
       404: Error404,
@@ -124,7 +136,11 @@ export const registerSupportSwagger = (
       }
     },
     responses: {
-      200: createSuccessResponse(SupportTicketSchema, 'Ticket status updated', 'Ticket status updated.'),
+      200: createSuccessResponse(
+        SupportTicketSchema,
+        'Ticket status updated',
+        'Ticket status updated.'
+      ),
       400: Error400,
       401: Error401,
       403: Error403,

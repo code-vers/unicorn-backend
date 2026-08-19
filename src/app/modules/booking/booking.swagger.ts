@@ -34,6 +34,8 @@ const BookingSchema = z.object({
   amountPaid: z.number(),
   paymentStatus: z.string(),
   bookingStatus: z.string(),
+  checkoutSessionId: z.string().nullable().optional(),
+  checkoutExpiresAt: z.string().nullable().optional(),
   assignedDriverId: z.string().nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string()
@@ -101,9 +103,11 @@ export const registerBookingSwagger = (
 
   registry.registerPath({
     method: 'post',
-    path: '/api/v1/bookings',
+    path: '/api/v1/bookings/checkout',
     tags: ['Bookings'],
-    summary: 'Create a new booking',
+    summary: 'Create a booking checkout (USER only)',
+    description:
+      'Creates a temporary vehicle hold and a required Stripe Checkout Session together. The booking is confirmed only after Stripe verifies full payment.',
     security: [{ [bearerAuth.name]: [] }],
     request: {
       body: {
@@ -115,9 +119,65 @@ export const registerBookingSwagger = (
       }
     },
     responses: {
-      201: createSuccessResponse(BookingSchema, 'Booking created successfully', 'Booking created successfully.'),
+      201: createSuccessResponse(
+        z.object({
+          booking: BookingSchema,
+          checkout: z.object({ url: z.string(), sessionId: z.string() })
+        }),
+        'Secure checkout created successfully',
+        'Redirect the customer to the returned checkout URL.'
+      ),
       400: Error400,
       401: Error401,
+      403: Error403,
+      500: Error500
+    }
+  });
+
+  registry.registerPath({
+    method: 'post',
+    path: '/api/v1/bookings',
+    tags: ['Bookings'],
+    summary: 'Create a new booking (ADMIN only)',
+    security: [{ [bearerAuth.name]: [] }],
+    request: {
+      body: {
+        content: {
+          'application/json': {
+            schema: CreateBookingSchema
+          }
+        }
+      }
+    },
+    responses: {
+      201: createSuccessResponse(
+        BookingSchema,
+        'Booking created successfully',
+        'Booking created successfully.'
+      ),
+      400: Error400,
+      401: Error401,
+      500: Error500
+    }
+  });
+
+  registry.registerPath({
+    method: 'post',
+    path: '/api/v1/bookings/{id}/cancel-checkout',
+    tags: ['Bookings'],
+    summary: 'Cancel an unpaid booking checkout (USER only)',
+    security: [{ [bearerAuth.name]: [] }],
+    request: { params: z.object({ id: z.string().uuid() }) },
+    responses: {
+      200: createSuccessResponse(
+        BookingSchema,
+        'Checkout cancelled and vehicle released',
+        'The unpaid booking was cancelled.'
+      ),
+      400: Error400,
+      401: Error401,
+      403: Error403,
+      404: Error404,
       500: Error500
     }
   });
@@ -135,7 +195,11 @@ export const registerBookingSwagger = (
       })
     },
     responses: {
-      200: createPaginatedResponse(BookingSchema, 'Bookings retrieved successfully', 'Bookings retrieved successfully.'),
+      200: createPaginatedResponse(
+        BookingSchema,
+        'Bookings retrieved successfully',
+        'Bookings retrieved successfully.'
+      ),
       401: Error401,
       403: Error403,
       500: Error500
@@ -149,7 +213,11 @@ export const registerBookingSwagger = (
     summary: 'Get my bookings',
     security: [{ [bearerAuth.name]: [] }],
     responses: {
-      200: createPaginatedResponse(BookingSchema, 'Bookings retrieved successfully', 'Bookings retrieved successfully.'),
+      200: createPaginatedResponse(
+        BookingSchema,
+        'Bookings retrieved successfully',
+        'Bookings retrieved successfully.'
+      ),
       401: Error401,
       500: Error500
     }
@@ -167,7 +235,11 @@ export const registerBookingSwagger = (
       })
     },
     responses: {
-      200: createSuccessResponse(BookingSchema, 'Booking retrieved successfully', 'Booking retrieved successfully.'),
+      200: createSuccessResponse(
+        BookingSchema,
+        'Booking retrieved successfully',
+        'Booking retrieved successfully.'
+      ),
       401: Error401,
       404: Error404,
       500: Error500
@@ -196,7 +268,11 @@ export const registerBookingSwagger = (
       }
     },
     responses: {
-      200: createSuccessResponse(BookingSchema, 'Booking status updated successfully', 'Booking status updated successfully.'),
+      200: createSuccessResponse(
+        BookingSchema,
+        'Booking status updated successfully',
+        'Booking status updated successfully.'
+      ),
       400: Error400,
       401: Error401,
       403: Error403,

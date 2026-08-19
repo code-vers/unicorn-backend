@@ -18,7 +18,11 @@ const updateProfile = z.object({
     address: z.string().optional(),
     idPassportNumber: z.string().optional(),
     emergencyContactName: z.string().optional(),
-    emergencyContactEmail: z.string().email('Invalid emergency contact email').optional().or(z.literal('')),
+    emergencyContactEmail: z
+      .string()
+      .email('Invalid emergency contact email')
+      .optional()
+      .or(z.literal('')),
     emergencyContactPhone: z.string().optional(),
     emergencyContactRelation: z.string().optional()
   })

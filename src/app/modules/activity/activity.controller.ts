@@ -16,5 +16,5 @@ const getRecentActivity: RequestHandler = catchAsync(async (req, res) => {
 });
 
 export const ActivityController = {
-  getRecentActivity,
+  getRecentActivity
 };

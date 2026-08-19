@@ -3,7 +3,11 @@ import type { Prisma } from '@prisma/client';
 import AppError from '../../errors/AppError';
 import { QueryBuilder } from '../../utils/QueryBuilder';
 import prisma from '../../utils/prisma';
-import type { ICreateDropOffChargePayload, IDropOffChargeQuery, IUpdateDropOffChargePayload } from './dropOffCharge.interface';
+import type {
+  ICreateDropOffChargePayload,
+  IDropOffChargeQuery,
+  IUpdateDropOffChargePayload
+} from './dropOffCharge.interface';
 
 const DROPOFF_CHARGE_SELECT = {
   id: true,
@@ -13,6 +17,7 @@ const DROPOFF_CHARGE_SELECT = {
   vehicleId: true,
   chargeType: true,
   amount: true,
+  distanceKm: true,
   seasonalMultiplier: true,
   status: true,
   createdAt: true,
@@ -41,6 +46,9 @@ const DROPOFF_CHARGE_SELECT = {
 } satisfies Prisma.DropOffChargeSelect;
 
 const createCharge = async (payload: ICreateDropOffChargePayload) => {
+  if (payload.chargeType === 'PER_KM' && !payload.distanceKm) {
+    throw new AppError(400, 'Distance is required for a per-kilometre charge.');
+  }
   // Validate locations exist
   const pickup = await prisma.location.findUnique({ where: { id: payload.pickupLocationId } });
   if (!pickup) throw new AppError(404, 'Pickup location not found.');
@@ -65,11 +73,17 @@ const createCharge = async (payload: ICreateDropOffChargePayload) => {
   });
 
   if (existingCharge) {
-    throw new AppError(409, 'A drop-off charge rule already exists for this exact location and vehicle configuration.');
+    throw new AppError(
+      409,
+      'A drop-off charge rule already exists for this exact location and vehicle configuration.'
+    );
   }
 
   const result = await prisma.dropOffCharge.create({
-    data: payload,
+    data: {
+      ...payload,
+      distanceKm: (payload.chargeType ?? 'FIXED') === 'PER_KM' ? payload.distanceKm : null
+    },
     select: DROPOFF_CHARGE_SELECT
   });
 
@@ -78,7 +92,7 @@ const createCharge = async (payload: ICreateDropOffChargePayload) => {
 
 const getAllCharges = async (query: IDropOffChargeQuery) => {
   const queryBuilder = new QueryBuilder(query)
-    // We can't search location names easily via QueryBuilder standard search without joins, 
+    // We can't search location names easily via QueryBuilder standard search without joins,
     // but we can filter by IDs exactly
     .filter()
     .sort()
@@ -131,12 +145,28 @@ const updateCharge = async (id: string, payload: IUpdateDropOffChargePayload) =>
     throw new AppError(404, 'Drop-off charge not found.');
   }
 
+  const nextChargeType = payload.chargeType ?? existingCharge.chargeType;
+  const nextDistance =
+    payload.distanceKm !== undefined ? payload.distanceKm : existingCharge.distanceKm?.toNumber();
+  if (nextChargeType === 'PER_KM' && !nextDistance) {
+    throw new AppError(400, 'Distance is required for a per-kilometre charge.');
+  }
+
   // If locations or vehicle changed, check validity and duplicates
-  if (payload.pickupLocationId || payload.dropOffLocationId || payload.vehicleId !== undefined || payload.vehicleCategory !== undefined) {
+  if (
+    payload.pickupLocationId ||
+    payload.dropOffLocationId ||
+    payload.vehicleId !== undefined ||
+    payload.vehicleCategory !== undefined
+  ) {
     const checkPickupId = payload.pickupLocationId || existingCharge.pickupLocationId;
     const checkDropOffId = payload.dropOffLocationId || existingCharge.dropOffLocationId;
-    const checkVehicleId = payload.vehicleId !== undefined ? payload.vehicleId : existingCharge.vehicleId;
-    const checkCategory = payload.vehicleCategory !== undefined ? payload.vehicleCategory : existingCharge.vehicleCategory;
+    const checkVehicleId =
+      payload.vehicleId !== undefined ? payload.vehicleId : existingCharge.vehicleId;
+    const checkCategory =
+      payload.vehicleCategory !== undefined
+        ? payload.vehicleCategory
+        : existingCharge.vehicleCategory;
 
     if (checkPickupId === checkDropOffId) {
       throw new AppError(400, 'Pickup and drop-off locations cannot be the same.');
@@ -160,7 +190,10 @@ const updateCharge = async (id: string, payload: IUpdateDropOffChargePayload) =>
 
   const result = await prisma.dropOffCharge.update({
     where: { id },
-    data: payload,
+    data: {
+      ...payload,
+      distanceKm: nextChargeType === 'FIXED' ? null : payload.distanceKm
+    },
     select: DROPOFF_CHARGE_SELECT
   });
 

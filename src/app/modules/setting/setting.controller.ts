@@ -27,6 +27,17 @@ const getSettingByKey = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getPublicSettings = catchAsync(async (_req: Request, res: Response) => {
+  const result = await SettingService.getPublicSettings();
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Public settings retrieved successfully',
+    data: result
+  });
+});
+
 const upsertSetting = catchAsync(async (req: Request, res: Response) => {
   const result = await SettingService.upsertSetting(req.body);
 
@@ -53,6 +64,7 @@ const deleteSetting = catchAsync(async (req: Request, res: Response) => {
 export const SettingController = {
   getAllSettings,
   getSettingByKey,
+  getPublicSettings,
   upsertSetting,
   deleteSetting
 };

@@ -4,18 +4,18 @@ import { ActivityLog, ActivityType, ActivityStatus } from '@prisma/client';
 const getRecentActivity = async (limit: number = 10) => {
   const activities = await prisma.activityLog.findMany({
     orderBy: {
-      createdAt: 'desc',
+      createdAt: 'desc'
     },
-    take: limit,
+    take: limit
   });
-  
-  return activities.map(act => ({
+
+  return activities.map((act) => ({
     id: act.id,
     type: act.type.toLowerCase(),
     title: act.title,
     description: act.description,
     time: act.createdAt.toISOString(),
-    status: act.status ? act.status.toLowerCase() : undefined,
+    status: act.status ? act.status.toLowerCase() : undefined
   }));
 };
 
@@ -26,12 +26,12 @@ const createActivity = async (payload: {
   status?: ActivityStatus;
 }): Promise<ActivityLog> => {
   const activity = await prisma.activityLog.create({
-    data: payload,
+    data: payload
   });
   return activity;
 };
 
 export const ActivityService = {
   getRecentActivity,
-  createActivity,
+  createActivity
 };

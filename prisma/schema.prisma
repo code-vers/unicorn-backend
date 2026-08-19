@@ -63,6 +63,7 @@ model UserDocument {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([userId, createdAt])
   @@map("user_documents")
 }
 
@@ -263,6 +264,7 @@ model DropOffCharge {
 
   chargeType         ChargeType @default(FIXED)
   amount             Decimal    @db.Decimal(10, 2)
+  distanceKm         Decimal?   @db.Decimal(10, 2)
   seasonalMultiplier Decimal?   @db.Decimal(10, 2)
 
   status DropOffChargeStatus @default(ACTIVE)
@@ -271,6 +273,7 @@ model DropOffCharge {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([pickupLocationId, dropOffLocationId, status, isDeleted])
   @@map("drop_off_charges")
 }
 
@@ -329,7 +332,7 @@ model Booking {
   addonsCost          Decimal @default(0.00) @db.Decimal(10, 2)
 
   modificationFee Decimal @default(0.00) @db.Decimal(10, 2)
-  taxPercentage   Decimal @default(16.00) @db.Decimal(5, 2)
+  taxPercentage   Decimal @db.Decimal(5, 2)
   taxAmount       Decimal @db.Decimal(10, 2)
   totalAmount     Decimal @db.Decimal(10, 2)
   amountPaid      Decimal @default(0.00) @db.Decimal(10, 2)
@@ -337,6 +340,10 @@ model Booking {
   // Status
   paymentStatus PaymentStatus @default(PENDING)
   bookingStatus BookingStatus @default(PENDING)
+
+  // Initial checkout is short-lived. A booking is confirmed only by a successful webhook.
+  checkoutSessionId String?   @unique
+  checkoutExpiresAt DateTime?
 
   // Associated Details
   driverDetails BookingDriverDetail?
@@ -346,6 +353,9 @@ model Booking {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([vehicleId, pickupDate, dropOffDate])
+  @@index([assignedDriverId, pickupDate, dropOffDate])
+  @@index([userId, createdAt])
   @@map("bookings")
 }
 
@@ -397,6 +407,7 @@ model Payment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([bookingId, createdAt])
   @@map("payments")
 }
 
@@ -418,6 +429,7 @@ model Notification {
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
 
+  @@index([userId, isRead, createdAt])
   @@map("notifications")
 }
 
@@ -426,7 +438,7 @@ model Feature {
   name        String
   description String?
   iconUrl     String?
-  charge      Decimal  @default(0)
+  charge      Decimal  @default(0) @db.Decimal(10, 2)
   isAddon     Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -464,6 +476,7 @@ model SupportTicket {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
+  @@index([status, createdAt])
   @@map("support_tickets")
 }
 
@@ -502,10 +515,10 @@ model Pricing {
   airportPickupDropCharge  Decimal @db.Decimal(10, 2)
   extraMileageCharge       Decimal @db.Decimal(10, 2)
 
-  gpsCharge              Decimal @default(10.00) @db.Decimal(10, 2)
-  fullInsuranceCharge    Decimal @default(20.00) @db.Decimal(10, 2)
-  additionalDriverCharge Decimal @default(15.00) @db.Decimal(10, 2)
-  childSeatCharge        Decimal @default(5.00) @db.Decimal(10, 2)
+  gpsCharge              Decimal @db.Decimal(10, 2)
+  fullInsuranceCharge    Decimal @db.Decimal(10, 2)
+  additionalDriverCharge Decimal @db.Decimal(10, 2)
+  childSeatCharge        Decimal @db.Decimal(10, 2)
 
   discountPercentage Decimal   @default(0.00) @db.Decimal(5, 2)
   discountValidUntil DateTime?

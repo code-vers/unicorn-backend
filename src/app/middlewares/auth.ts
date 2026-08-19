@@ -23,12 +23,12 @@ const isAuthUser = (payload: unknown): payload is IAuthUser => {
 const auth = (...requiredRoles: UserRole[]): RequestHandler => {
   return (req, _res, next) => {
     const authHeader = req.headers.authorization;
+    const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : undefined;
+    const token = bearerToken ?? req.cookies?.accessToken;
 
-    if (!authHeader?.startsWith('Bearer ')) {
+    if (!token) {
       return next(new AppError(401, 'Authorization token is missing.'));
     }
-
-    const token = authHeader.split(' ')[1];
 
     try {
       const decoded = jwt.verify(token, config.jwt.accessSecret);

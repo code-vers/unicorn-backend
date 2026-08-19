@@ -58,5 +58,5 @@ export const AnalyticsController = {
   getRevenueTrends,
   getBookingTrends,
   getVehicleStats,
-  getPerformance,
+  getPerformance
 };

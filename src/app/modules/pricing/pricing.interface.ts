@@ -12,10 +12,10 @@ export interface IPricingPayload {
   deliveryCollectionCharge: number;
   airportPickupDropCharge: number;
   extraMileageCharge: number;
-  gpsCharge?: number;
-  fullInsuranceCharge?: number;
-  additionalDriverCharge?: number;
-  childSeatCharge?: number;
+  gpsCharge: number;
+  fullInsuranceCharge: number;
+  additionalDriverCharge: number;
+  childSeatCharge: number;
   discountPercentage?: number;
-  discountValidUntil?: Date | string;
+  discountValidUntil?: Date | string | null;
 }

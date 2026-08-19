@@ -1,12 +1,13 @@
 import type { DocumentStatus, Prisma } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import config from '../../config';
 import AppError from '../../errors/AppError';
 import { QueryBuilder } from '../../utils/QueryBuilder';
 import prisma from '../../utils/prisma';
+import { logger } from '../../utils/logger';
 import type {
   IAdminUpdateUserPayload,
   IChangePasswordPayload,
@@ -46,12 +47,9 @@ const formatUserResponse = (user: any) => {
 
 const getMe = async (userId: string) => {
   const user = await prisma.user.findFirst({
-    where: { 
+    where: {
       id: userId,
-      OR: [
-        { profile: null },
-        { profile: { isDeleted: false } }
-      ]
+      OR: [{ profile: null }, { profile: { isDeleted: false } }]
     },
     select: USER_SELECT
   });
@@ -65,12 +63,9 @@ const getMe = async (userId: string) => {
 
 const updateProfile = async (userId: string, payload: IUpdateProfilePayload, photoUrl?: string) => {
   const user = await prisma.user.findFirst({
-    where: { 
+    where: {
       id: userId,
-      OR: [
-        { profile: null },
-        { profile: { isDeleted: false } }
-      ]
+      OR: [{ profile: null }, { profile: { isDeleted: false } }]
     },
     include: { profile: true }
   });
@@ -90,7 +85,7 @@ const updateProfile = async (userId: string, payload: IUpdateProfilePayload, pho
         try {
           fs.unlinkSync(fullPath);
         } catch (err) {
-          console.error(`Failed to delete old photo: ${fullPath}`, err);
+          logger.error(`Failed to delete old photo: ${fullPath}`, err);
         }
       }
     }
@@ -128,12 +123,9 @@ const updateProfile = async (userId: string, payload: IUpdateProfilePayload, pho
 
 const changePassword = async (userId: string, payload: IChangePasswordPayload) => {
   const user = await prisma.user.findFirst({
-    where: { 
+    where: {
       id: userId,
-      OR: [
-        { profile: null },
-        { profile: { isDeleted: false } }
-      ]
+      OR: [{ profile: null }, { profile: { isDeleted: false } }]
     }
   });
 
@@ -148,7 +140,10 @@ const changePassword = async (userId: string, payload: IChangePasswordPayload) =
     }
   }
 
-  const newHashedPassword = await bcrypt.hash(payload.newPassword!, Number(config.bcryptSaltRounds));
+  const newHashedPassword = await bcrypt.hash(
+    payload.newPassword!,
+    Number(config.bcryptSaltRounds)
+  );
 
   await prisma.user.update({
     where: { id: userId },
@@ -156,14 +151,15 @@ const changePassword = async (userId: string, payload: IChangePasswordPayload) =
   });
 };
 
-const uploadDocument = async (userId: string, payload: IUploadDocumentPayload, documentPath: string) => {
+const uploadDocument = async (
+  userId: string,
+  payload: IUploadDocumentPayload,
+  documentPath: string
+) => {
   const user = await prisma.user.findFirst({
-    where: { 
+    where: {
       id: userId,
-      OR: [
-        { profile: null },
-        { profile: { isDeleted: false } }
-      ]
+      OR: [{ profile: null }, { profile: { isDeleted: false } }]
     }
   });
 
@@ -209,7 +205,7 @@ const deleteDocument = async (userId: string, docId: string, isAdmin = false) =>
     try {
       fs.unlinkSync(fullPath);
     } catch (err) {
-      console.error(`Failed to delete document file: ${fullPath}`, err);
+      logger.error(`Failed to delete document file: ${fullPath}`, err);
     }
   }
 };
@@ -232,19 +228,12 @@ const updateDocumentStatus = async (docId: string, status: DocumentStatus) => {
 };
 
 const getAllUsers = async (query: IUserQuery) => {
-  const queryBuilder = new QueryBuilder(query)
-    .search(['name', 'email']) 
-    .filter()
-    .sort()
-    .paginate();
+  const queryBuilder = new QueryBuilder(query).search(['name', 'email']).filter().sort().paginate();
 
   const builtQuery = queryBuilder.build();
   const whereClause: Prisma.UserWhereInput = {
     ...builtQuery.where,
-    OR: [
-      { profile: null },
-      { profile: { isDeleted: false } }
-    ]
+    OR: [{ profile: null }, { profile: { isDeleted: false } }]
   };
 
   const users = await prisma.user.findMany({
@@ -269,12 +258,9 @@ const getAllUsers = async (query: IUserQuery) => {
 
 const getUserById = async (id: string) => {
   const user = await prisma.user.findFirst({
-    where: { 
+    where: {
       id,
-      OR: [
-        { profile: null },
-        { profile: { isDeleted: false } }
-      ]
+      OR: [{ profile: null }, { profile: { isDeleted: false } }]
     },
     select: USER_SELECT
   });
@@ -288,12 +274,9 @@ const getUserById = async (id: string) => {
 
 const adminUpdateUser = async (id: string, payload: IAdminUpdateUserPayload) => {
   const user = await prisma.user.findFirst({
-    where: { 
+    where: {
       id,
-      OR: [
-        { profile: null },
-        { profile: { isDeleted: false } }
-      ]
+      OR: [{ profile: null }, { profile: { isDeleted: false } }]
     }
   });
 
@@ -320,12 +303,9 @@ const adminUpdateUser = async (id: string, payload: IAdminUpdateUserPayload) => 
 
 const changeRole = async (id: string, payload: IChangeRolePayload) => {
   const user = await prisma.user.findFirst({
-    where: { 
+    where: {
       id,
-      OR: [
-        { profile: null },
-        { profile: { isDeleted: false } }
-      ]
+      OR: [{ profile: null }, { profile: { isDeleted: false } }]
     }
   });
 
@@ -360,12 +340,9 @@ const deleteUser = async (idOrIds: string | string[]) => {
   }
 
   const existingUsers = await prisma.user.findMany({
-    where: { 
+    where: {
       id: { in: ids },
-      OR: [
-        { profile: null },
-        { profile: { isDeleted: false } }
-      ]
+      OR: [{ profile: null }, { profile: { isDeleted: false } }]
     }
   });
 

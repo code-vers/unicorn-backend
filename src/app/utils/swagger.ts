@@ -1,4 +1,8 @@
-import { OpenApiGeneratorV3, OpenAPIRegistry, extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
+import {
+  OpenApiGeneratorV3,
+  OpenAPIRegistry,
+  extendZodWithOpenApi
+} from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
 import { registerAuthSwagger } from '../modules/auth/auth.swagger';
@@ -49,8 +53,8 @@ export const generateSwaggerDocs = () => {
     openapi: '3.0.0',
     info: {
       version: '1.0.0',
-      title: 'Backend API Boilerplate',
-      description: 'API Documentation for the backend boilerplate.'
+      title: 'Unicorn Car Rental API',
+      description: 'API documentation for the Unicorn car-rental platform.'
     },
     servers: [{ url: '/' }]
   });

@@ -33,6 +33,7 @@ const DropOffChargeSchema = z.object({
   vehicleId: z.string().nullable().openapi({ example: 'veh-1234' }),
   chargeType: z.enum(CHARGE_TYPES).openapi({ example: 'FIXED' }),
   amount: z.number().openapi({ example: 5000 }),
+  distanceKm: z.number().nullable().openapi({ example: 24.5 }),
   seasonalMultiplier: z.number().nullable().openapi({ example: 1.5 }),
   status: z.enum(STATUSES).openapi({ example: 'ACTIVE' }),
   createdAt: z.string(),
@@ -46,7 +47,8 @@ const CreateDropOffChargeSchema = z.object({
   vehicleId: z.string().optional().openapi({ example: 'uuid-vehicle' }),
   chargeType: z.enum(CHARGE_TYPES).optional().openapi({ example: 'FIXED' }),
   amount: z.number().openapi({ example: 5000 }),
-  seasonalMultiplier: z.number().optional().openapi({ example: 1000 }),
+  distanceKm: z.number().positive().optional().openapi({ example: 24.5 }),
+  seasonalMultiplier: z.number().positive().optional().openapi({ example: 1.5 }),
   status: z.enum(STATUSES).optional().openapi({ example: 'ACTIVE' })
 });
 
@@ -73,7 +75,11 @@ export const registerDropOffChargeSwagger = (
       }
     },
     responses: {
-      201: createSuccessResponse(DropOffChargeSchema, 'Drop-off charge created successfully', 'Drop-off charge created successfully.'),
+      201: createSuccessResponse(
+        DropOffChargeSchema,
+        'Drop-off charge created successfully',
+        'Drop-off charge created successfully.'
+      ),
       400: Error400,
       401: Error401,
       403: Error403,
@@ -105,7 +111,11 @@ export const registerDropOffChargeSwagger = (
       })
     },
     responses: {
-      200: createPaginatedResponse(DropOffChargeSchema, 'Drop-off charges retrieved successfully', 'Drop-off charges retrieved successfully.'),
+      200: createPaginatedResponse(
+        DropOffChargeSchema,
+        'Drop-off charges retrieved successfully',
+        'Drop-off charges retrieved successfully.'
+      ),
       401: Error401,
       403: Error403,
       500: Error500
@@ -125,7 +135,11 @@ export const registerDropOffChargeSwagger = (
       })
     },
     responses: {
-      200: createSuccessResponse(DropOffChargeSchema, 'Drop-off charge retrieved successfully', 'Drop-off charge retrieved successfully.'),
+      200: createSuccessResponse(
+        DropOffChargeSchema,
+        'Drop-off charge retrieved successfully',
+        'Drop-off charge retrieved successfully.'
+      ),
       401: Error401,
       403: Error403,
       404: Error404,
@@ -153,7 +167,11 @@ export const registerDropOffChargeSwagger = (
       }
     },
     responses: {
-      200: createSuccessResponse(DropOffChargeSchema, 'Drop-off charge updated successfully', 'Drop-off charge updated successfully.'),
+      200: createSuccessResponse(
+        DropOffChargeSchema,
+        'Drop-off charge updated successfully',
+        'Drop-off charge updated successfully.'
+      ),
       400: Error400,
       401: Error401,
       403: Error403,
@@ -172,18 +190,31 @@ export const registerDropOffChargeSwagger = (
     security: [{ [bearerAuth.name]: [] }],
     request: {
       params: z.object({
-        id: z.string().openapi({ description: 'Drop-off charge ID (can be anything if sending array in body)', example: 'uuid-1234' })
+        id: z.string().openapi({
+          description: 'Drop-off charge ID (can be anything if sending array in body)',
+          example: 'uuid-1234'
+        })
       }),
       body: {
         content: {
           'application/json': {
-            schema: z.array(z.string()).optional().openapi({ description: 'Array of Drop-Off Charge IDs for bulk delete', example: ['uuid-1234', 'uuid-5678'] })
+            schema: z
+              .array(z.string())
+              .optional()
+              .openapi({
+                description: 'Array of Drop-Off Charge IDs for bulk delete',
+                example: ['uuid-1234', 'uuid-5678']
+              })
           }
         }
       }
     },
     responses: {
-      200: createSuccessResponse(z.null(), 'Drop-off charge deleted successfully', 'Drop-off charge deleted successfully.'),
+      200: createSuccessResponse(
+        z.null(),
+        'Drop-off charge deleted successfully',
+        'Drop-off charge deleted successfully.'
+      ),
       401: Error401,
       403: Error403,
       404: Error404,

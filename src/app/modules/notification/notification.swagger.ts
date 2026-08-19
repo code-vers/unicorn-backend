@@ -40,7 +40,11 @@ export const registerNotificationSwagger = (
       })
     },
     responses: {
-      200: createPaginatedResponse(NotificationSchema, 'Notifications retrieved successfully', 'Notifications retrieved successfully.'),
+      200: createPaginatedResponse(
+        NotificationSchema,
+        'Notifications retrieved successfully',
+        'Notifications retrieved successfully.'
+      ),
       401: Error401,
       500: Error500
     }
@@ -54,7 +58,11 @@ export const registerNotificationSwagger = (
     summary: 'Mark all notifications as read',
     security: [{ [bearerAuth.name]: [] }],
     responses: {
-      200: createSuccessResponse(z.null(), 'All notifications marked as read successfully', 'All notifications marked as read successfully.'),
+      200: createSuccessResponse(
+        z.null(),
+        'All notifications marked as read successfully',
+        'All notifications marked as read successfully.'
+      ),
       401: Error401,
       500: Error500
     }
@@ -73,7 +81,11 @@ export const registerNotificationSwagger = (
       })
     },
     responses: {
-      200: createSuccessResponse(NotificationSchema, 'Notification marked as read successfully', 'Notification marked as read successfully.'),
+      200: createSuccessResponse(
+        NotificationSchema,
+        'Notification marked as read successfully',
+        'Notification marked as read successfully.'
+      ),
       401: Error401,
       403: Error403,
       404: Error404,

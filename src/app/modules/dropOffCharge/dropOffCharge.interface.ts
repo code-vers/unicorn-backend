@@ -7,11 +7,15 @@ export interface ICreateDropOffChargePayload {
   vehicleId?: string;
   chargeType?: ChargeType;
   amount: number;
+  distanceKm?: number;
   seasonalMultiplier?: number;
   status?: DropOffChargeStatus;
 }
 
-export type IUpdateDropOffChargePayload = Partial<ICreateDropOffChargePayload>;
+export type IUpdateDropOffChargePayload = Omit<
+  Partial<ICreateDropOffChargePayload>,
+  'distanceKm'
+> & { distanceKm?: number | null };
 
 export interface IDropOffChargeQuery {
   searchTerm?: string;

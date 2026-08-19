@@ -55,7 +55,10 @@ const createLocation = async (payload: ICreateLocationPayload): Promise<ILocatio
   });
 
   if (existingLocation) {
-    throw new AppError(409, `A location named "${payload.name}" already exists in ${payload.city}.`);
+    throw new AppError(
+      409,
+      `A location named "${payload.name}" already exists in ${payload.city}.`
+    );
   }
 
   const location = await prisma.location.create({
@@ -162,7 +165,7 @@ const updateLocation = async (
 
 const deleteLocation = async (idOrIds: string | string[]): Promise<void> => {
   let ids: string[] = [];
-  
+
   if (Array.isArray(idOrIds)) {
     ids = idOrIds;
   } else if (typeof idOrIds === 'string') {

@@ -42,6 +42,7 @@ router.patch(
   DriverController.updateAvailability
 );
 
+router.delete('/bulk', auth('ADMIN'), DriverController.deleteDriver);
 router.delete('/:id', auth('ADMIN'), DriverController.deleteDriver);
 
 export const DriverRoutes = router;

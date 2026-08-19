@@ -1,7 +1,5 @@
 import { Request, Response } from 'express';
-import { randomUUID } from 'crypto';
-import { mkdir, unlink, writeFile } from 'fs/promises';
-import path from 'path';
+import { unlink } from 'fs/promises';
 import { DocumentStatus, DocumentType } from '@prisma/client';
 import AppError from '../../errors/AppError';
 import catchAsync from '../../utils/catchAsync';
@@ -21,33 +19,26 @@ const uploadDocument = catchAsync(async (req: Request, res: Response) => {
 
   const type = req.body.type as DocumentType;
   if (!Object.values(DocumentType).includes(type)) {
+    await unlink(file.path).catch(() => undefined);
     throw new AppError(
       400,
       `Invalid document type. Expected one of: ${Object.values(DocumentType).join(', ')}`
     );
   }
 
-  const extension = path.extname(file.originalname).toLowerCase();
-  const fileName = `${randomUUID()}${extension}`;
-  const uploadDirectory = path.resolve(process.cwd(), 'uploads', 'documents');
-  const storedFilePath = path.join(uploadDirectory, fileName);
-
-  await mkdir(uploadDirectory, { recursive: true });
-  await writeFile(storedFilePath, file.buffer);
-
-  const fileUrl = `/uploads/documents/${fileName}`;
+  const fileUrl = `/uploads/documents/${file.filename}`;
   const payload = {
     ...req.body,
     userId,
     type,
-    name: req.body.name || file.originalname,
+    name: req.body.name || file.originalname
   };
 
   let result;
   try {
     result = await DocumentService.uploadDocument(payload, fileUrl);
   } catch (error) {
-    await unlink(storedFilePath).catch(() => undefined);
+    await unlink(file.path).catch(() => undefined);
     throw error;
   }
 
@@ -79,6 +70,26 @@ const getMyDocuments = catchAsync(async (req: Request, res: Response) => {
     success: true,
     message: 'User documents retrieved successfully',
     data: result
+  });
+});
+
+const downloadDocument = catchAsync(async (req: Request, res: Response) => {
+  const { filePath } = await DocumentService.getDocumentFileForUser(
+    req.params.id as string,
+    req.user!.userId,
+    req.user!.role === 'ADMIN'
+  );
+
+  await new Promise<void>((resolve, reject) => {
+    res.sendFile(filePath, (error) => {
+      if (error) {
+        reject(
+          new AppError(410, 'This document file is no longer available. Please upload it again.')
+        );
+        return;
+      }
+      resolve();
+    });
   });
 });
 
@@ -117,6 +128,7 @@ export const DocumentController = {
   uploadDocument,
   getAllDocuments,
   getMyDocuments,
+  downloadDocument,
   updateDocumentStatus,
   deleteDocument
 };

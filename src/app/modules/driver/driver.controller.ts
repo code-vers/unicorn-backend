@@ -92,7 +92,8 @@ const updateAvailability: RequestHandler = catchAsync(async (req, res) => {
 });
 
 const deleteDriver: RequestHandler = catchAsync(async (req, res) => {
-  const idOrIds = Array.isArray(req.body) && req.body.length > 0 ? req.body : req.params['id'] as string;
+  const idOrIds =
+    Array.isArray(req.body) && req.body.length > 0 ? req.body : (req.params['id'] as string);
   await DriverService.deleteDriver(idOrIds);
 
   sendResponse(res, {

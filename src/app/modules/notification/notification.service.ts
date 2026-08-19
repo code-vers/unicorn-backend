@@ -34,7 +34,7 @@ const getUserNotifications = async (userId: string, query: INotificationQuery) =
   const total = await prisma.notification.count({ where: prismaQuery.where });
   const take = builtQuery.take || 10;
   const skip = builtQuery.skip || 0;
-  
+
   return {
     meta: {
       page: skip / take + 1,

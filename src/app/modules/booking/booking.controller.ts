@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
+import { PaymentService } from '../payment/payment.service';
 import { BookingService } from './booking.service';
 
 const calculate = catchAsync(async (req: Request, res: Response) => {
@@ -27,6 +28,43 @@ const createBooking = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const createBookingCheckout = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.user!.userId;
+  const booking = await BookingService.createBooking(userId, req.body, { notify: false });
+
+  if (!booking) {
+    throw new Error('Booking could not be created.');
+  }
+
+  try {
+    const checkout = await PaymentService.createCheckoutSession(booking.id, userId);
+
+    sendResponse(res, {
+      statusCode: 201,
+      success: true,
+      message: 'Secure checkout created successfully',
+      data: { booking, checkout }
+    });
+  } catch (error) {
+    await BookingService.deleteUnpaidBooking(booking.id, userId).catch(() => undefined);
+    throw error;
+  }
+});
+
+const cancelBookingCheckout = catchAsync(async (req: Request, res: Response) => {
+  const result = await PaymentService.cancelCheckoutSession(
+    req.params.id as string,
+    req.user!.userId
+  );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Checkout cancelled and vehicle released',
+    data: result
+  });
+});
+
 const getMyBookings = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user!.userId;
   const result = await BookingService.getMyBookings(userId, req.query);
@@ -42,7 +80,11 @@ const getMyBookings = catchAsync(async (req: Request, res: Response) => {
 
 const getBookingById = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const result = await BookingService.getBookingById(id as string, req.user!.userId, req.user!.role);
+  const result = await BookingService.getBookingById(
+    id as string,
+    req.user!.userId,
+    req.user!.role
+  );
 
   sendResponse(res, {
     statusCode: 200,
@@ -79,7 +121,7 @@ const extendPayment = catchAsync(async (req: Request, res: Response) => {
 const modifyBooking = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const userId = req.user!.userId;
-  const result = await BookingService.modifyBooking(id as string, userId, req.body);
+  const result = await BookingService.modifyBooking(id as string, userId, req.user!.role, req.body);
 
   sendResponse(res, {
     statusCode: 200,
@@ -116,6 +158,8 @@ const updateBookingStatus = catchAsync(async (req: Request, res: Response) => {
 export const BookingController = {
   calculate,
   createBooking,
+  createBookingCheckout,
+  cancelBookingCheckout,
   getMyBookings,
   getBookingById,
   addPayment,

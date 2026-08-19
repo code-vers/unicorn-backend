@@ -1,8 +1,13 @@
 import prisma from '../../utils/prisma';
 import { QueryBuilder } from '../../utils/QueryBuilder';
-import { ISupportTicketPayload, ISupportQuery, ISupportStatusUpdatePayload } from './support.interface';
+import {
+  ISupportTicketPayload,
+  ISupportQuery,
+  ISupportStatusUpdatePayload
+} from './support.interface';
 import AppError from '../../errors/AppError';
 import { sendEmail } from '../../utils/email';
+import { logger } from '../../utils/logger';
 
 const createTicket = async (payload: ISupportTicketPayload, userId?: string) => {
   let name = payload.name;
@@ -39,7 +44,7 @@ const createTicket = async (payload: ISupportTicketPayload, userId?: string) => 
     email,
     'Support Ticket Received',
     `<p>Hi ${name},</p><p>We have received your support request regarding "<strong>${payload.subject}</strong>". Our team will get back to you as soon as possible.</p><p>Thank you,<br/>Unicorn Support Team</p>`
-  ).catch(err => console.error('Error sending support confirmation email:', err));
+  ).catch((error: unknown) => logger.error('Error sending support confirmation email', error));
 
   return ticket;
 };

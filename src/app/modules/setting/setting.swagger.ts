@@ -34,7 +34,11 @@ export const registerSettingSwagger = (
     summary: 'Get all system settings (ADMIN only)',
     security: [{ [bearerAuth.name]: [] }],
     responses: {
-      200: createSuccessResponse(z.array(SettingSchema), 'Settings retrieved successfully', 'Settings retrieved successfully.'),
+      200: createSuccessResponse(
+        z.array(SettingSchema),
+        'Settings retrieved successfully',
+        'Settings retrieved successfully.'
+      ),
       401: Error401,
       403: Error403,
       500: Error500
@@ -57,7 +61,11 @@ export const registerSettingSwagger = (
       }
     },
     responses: {
-      200: createSuccessResponse(SettingSchema, 'Setting updated successfully', 'Setting updated successfully.'),
+      200: createSuccessResponse(
+        SettingSchema,
+        'Setting updated successfully',
+        'Setting updated successfully.'
+      ),
       401: Error401,
       403: Error403,
       500: Error500
@@ -75,7 +83,11 @@ export const registerSettingSwagger = (
       })
     },
     responses: {
-      200: createSuccessResponse(SettingSchema, 'Setting retrieved successfully', 'Setting retrieved successfully.'),
+      200: createSuccessResponse(
+        SettingSchema,
+        'Setting retrieved successfully',
+        'Setting retrieved successfully.'
+      ),
       404: Error404,
       500: Error500
     }
@@ -93,7 +105,11 @@ export const registerSettingSwagger = (
       })
     },
     responses: {
-      200: createSuccessResponse(z.null(), 'Setting deleted successfully', 'Setting deleted successfully.'),
+      200: createSuccessResponse(
+        z.null(),
+        'Setting deleted successfully',
+        'Setting deleted successfully.'
+      ),
       401: Error401,
       403: Error403,
       404: Error404,

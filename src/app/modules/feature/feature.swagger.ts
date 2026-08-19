@@ -48,7 +48,11 @@ export const registerFeatureSwagger = (
       }
     },
     responses: {
-      201: createSuccessResponse(FeatureSchema, 'Feature created successfully', 'Feature created successfully.'),
+      201: createSuccessResponse(
+        FeatureSchema,
+        'Feature created successfully',
+        'Feature created successfully.'
+      ),
       400: Error400,
       401: Error401,
       403: Error403,
@@ -71,7 +75,11 @@ export const registerFeatureSwagger = (
       })
     },
     responses: {
-      200: createPaginatedResponse(FeatureSchema, 'Features retrieved successfully', 'Features retrieved successfully.'),
+      200: createPaginatedResponse(
+        FeatureSchema,
+        'Features retrieved successfully',
+        'Features retrieved successfully.'
+      ),
       500: Error500
     }
   });
@@ -88,7 +96,11 @@ export const registerFeatureSwagger = (
       })
     },
     responses: {
-      200: createSuccessResponse(FeatureSchema, 'Feature retrieved successfully', 'Feature retrieved successfully.'),
+      200: createSuccessResponse(
+        FeatureSchema,
+        'Feature retrieved successfully',
+        'Feature retrieved successfully.'
+      ),
       404: Error404,
       500: Error500
     }
@@ -112,7 +124,11 @@ export const registerFeatureSwagger = (
       }
     },
     responses: {
-      200: createSuccessResponse(FeatureSchema, 'Feature updated successfully', 'Feature updated successfully.'),
+      200: createSuccessResponse(
+        FeatureSchema,
+        'Feature updated successfully',
+        'Feature updated successfully.'
+      ),
       401: Error401,
       403: Error403,
       404: Error404,
@@ -133,7 +149,11 @@ export const registerFeatureSwagger = (
       })
     },
     responses: {
-      200: createSuccessResponse(FeatureSchema, 'Feature deleted successfully', 'Feature deleted successfully.'),
+      200: createSuccessResponse(
+        FeatureSchema,
+        'Feature deleted successfully',
+        'Feature deleted successfully.'
+      ),
       401: Error401,
       403: Error403,
       404: Error404,

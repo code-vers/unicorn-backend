@@ -10,14 +10,10 @@ const createFeature = async (payload: IFeaturePayload) => {
 };
 
 const getAllFeatures = async (query: IFeatureQuery) => {
-  const queryBuilder = new QueryBuilder(query)
-    .search(['name'])
-    .filter()
-    .sort()
-    .paginate();
+  const queryBuilder = new QueryBuilder(query).search(['name']).filter().sort().paginate();
 
   const builtQuery = queryBuilder.build();
-  
+
   // Custom filter for isAddon boolean
   const whereClause: any = { ...builtQuery.where };
   if (query.isAddon !== undefined) {

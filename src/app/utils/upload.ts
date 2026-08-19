@@ -1,15 +1,28 @@
-import fs from 'fs';
+import { randomUUID } from 'node:crypto';
+import fs from 'node:fs';
 import multer from 'multer';
-import path from 'path';
+import path from 'node:path';
 
-// File filter (optional but recommended)
-const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  const allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-  if (allowedMimeTypes.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error('Invalid file type. Only JPEG, JPG, PNG, and PDF are allowed.'));
-  }
+const extensionByMimeType: Record<string, string> = {
+  'image/jpeg': '.jpg',
+  'image/png': '.png',
+  'image/webp': '.webp',
+  'application/pdf': '.pdf'
+};
+
+const createFileFilter = (folderName: string) => {
+  const allowedMimeTypes =
+    folderName === 'documents'
+      ? ['image/jpeg', 'image/png', 'application/pdf']
+      : ['image/jpeg', 'image/png', 'image/webp'];
+
+  return (_req: Express.Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+    if (allowedMimeTypes.includes(file.mimetype)) {
+      cb(null, true);
+      return;
+    }
+    cb(new Error('Invalid file type for this upload.'));
+  };
 };
 
 /**
@@ -17,12 +30,24 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCa
  * @param folderName The name of the folder (e.g., 'vehicles', 'drivers')
  */
 export const createUploader = (folderName: string) => {
-  // Use memory storage for Vercel deployment temporarily to avoid EROFS error
-  const storage = multer.memoryStorage();
+  const uploadDirectory = path.resolve(process.cwd(), 'uploads', folderName);
+  fs.mkdirSync(uploadDirectory, { recursive: true });
+
+  const storage = multer.diskStorage({
+    destination: (_req, _file, callback) => callback(null, uploadDirectory),
+    filename: (_req, file, callback) => {
+      const extension = extensionByMimeType[file.mimetype];
+      if (!extension) {
+        callback(new Error('Invalid file type for this upload.'), '');
+        return;
+      }
+      callback(null, `${randomUUID()}${extension}`);
+    }
+  });
 
   return multer({
     storage,
-    fileFilter,
+    fileFilter: createFileFilter(folderName),
     limits: {
       fileSize: 5 * 1024 * 1024 // 5MB limit per file
     }

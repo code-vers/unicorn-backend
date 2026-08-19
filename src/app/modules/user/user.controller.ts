@@ -55,7 +55,7 @@ const changePassword: RequestHandler = catchAsync(async (req, res) => {
 
 const uploadDocument: RequestHandler = catchAsync(async (req, res) => {
   const userId = req.user!.userId;
-  
+
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
   if (!files?.document?.[0]) {
     throw new AppError(400, 'Document file is required.');
@@ -150,7 +150,8 @@ const changeRole: RequestHandler = catchAsync(async (req, res) => {
 });
 
 const deleteUser: RequestHandler = catchAsync(async (req, res) => {
-  const idOrIds = Array.isArray(req.body) && req.body.length > 0 ? req.body : req.params['id'] as string;
+  const idOrIds =
+    Array.isArray(req.body) && req.body.length > 0 ? req.body : (req.params['id'] as string);
   await UserService.deleteUser(idOrIds);
 
   sendResponse(res, {

@@ -39,6 +39,7 @@ router.patch(
   VehicleController.updateAvailability
 );
 
+router.delete('/bulk', auth('ADMIN'), VehicleController.deleteVehicle);
 router.delete('/:id', auth('ADMIN'), VehicleController.deleteVehicle);
 
 export const VehicleRoutes = router;

@@ -1,9 +1,8 @@
 import cookieParser from 'cookie-parser';
 import cors, { type CorsOptions } from 'cors';
 import express, { type Application, type Request, type Response } from 'express';
-// import rateLimit from 'express-rate-limit'; // unused during development
 import helmet from 'helmet';
-import path from 'path';
+import path from 'node:path';
 import swaggerUi from 'swagger-ui-express';
 
 import config from './app/config';
@@ -12,8 +11,10 @@ import notFound from './app/middlewares/notFound';
 import router from './app/routes';
 import sendResponse from './app/utils/sendResponse';
 import { generateSwaggerDocs } from './app/utils/swagger';
+import prisma from './app/utils/prisma';
 
 const app: Application = express();
+app.set('trust proxy', config.trustProxy);
 
 // CORS fix: wildcard '*' + credentials:true is blocked by browsers.
 // When CORS_ORIGIN=*, we allow all origins without credentials.
@@ -26,41 +27,27 @@ const corsOptions: CorsOptions =
         credentials: true
       };
 
-app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors(corsOptions));
 app.use(cookieParser());
 
 // IMPORTANT: Stripe webhook needs raw body for signature verification.
 // This MUST be registered before express.json() parses the body.
-app.use(
-  '/api/v1/payments/webhook',
-  express.raw({ type: 'application/json' })
-);
+app.use('/api/v1/payments/webhook', express.raw({ type: 'application/json' }));
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files (like uploaded images)
+app.use('/uploads/documents', (_req, res) => {
+  res.status(404).json({ success: false, message: 'File not found.' });
+});
+
+// Public media only. Identity documents are served through an authenticated route.
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Setup Swagger Docs
 const swaggerDocs = generateSwaggerDocs();
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-
-// Rate limiting — disabled during development. Uncomment before going to production.
-// app.use(
-//   '/api',
-//   rateLimit({
-//     windowMs: config.rateLimit.windowMs,
-//     limit: config.rateLimit.max,
-//     standardHeaders: 'draft-8',
-//     legacyHeaders: false,
-//     message: {
-//       success: false,
-//       message: 'Too many requests. Please try again later.'
-//     }
-//   })
-// );
 
 app.get('/health', (_req: Request, res: Response) => {
   sendResponse(res, {
@@ -72,6 +59,15 @@ app.get('/health', (_req: Request, res: Response) => {
       timestamp: new Date().toISOString()
     }
   });
+});
+
+app.get('/health/ready', async (_req: Request, res: Response) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.status(200).json({ success: true, message: 'Server is ready.' });
+  } catch {
+    res.status(503).json({ success: false, message: 'Database is unavailable.' });
+  }
 });
 
 app.use('/api/v1', router);

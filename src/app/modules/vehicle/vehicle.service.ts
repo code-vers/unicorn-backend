@@ -1,10 +1,11 @@
 import type { Prisma } from '@prisma/client';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import AppError from '../../errors/AppError';
 import { QueryBuilder } from '../../utils/QueryBuilder';
 import prisma from '../../utils/prisma';
+import { logger } from '../../utils/logger';
 import type {
   ICreateVehiclePayload,
   IUpdateAvailabilityPayload,
@@ -20,10 +21,7 @@ const VEHICLE_INCLUDE = {
   features: true
 } satisfies Prisma.VehicleInclude;
 
-const createVehicle = async (
-  payload: ICreateVehiclePayload,
-  images: IVehicleImagePayload[]
-) => {
+const createVehicle = async (payload: ICreateVehiclePayload, images: IVehicleImagePayload[]) => {
   // Check if location exists
   const location = await prisma.location.findFirst({
     where: { id: payload.locationId, isDeleted: false }
@@ -38,9 +36,12 @@ const createVehicle = async (
     const vehicle = await tx.vehicle.create({
       data: {
         ...vehicleData,
-        features: features && features.length > 0 ? {
-          connect: features.map(id => ({ id }))
-        } : undefined
+        features:
+          features && features.length > 0
+            ? {
+                connect: features.map((id) => ({ id }))
+              }
+            : undefined
       }
     });
 
@@ -110,7 +111,6 @@ const getAllVehicles = async (query: IVehicleQuery) => {
     }
   }
 
-
   // Handle feature IDs
   if (featureIds) {
     const featureIdsArray = Array.isArray(featureIds) ? featureIds : [featureIds];
@@ -138,10 +138,7 @@ const getAllVehicles = async (query: IVehicleQuery) => {
         ]
       }
     };
-  } else if (
-    query.status === 'ACTIVE' &&
-    query.availability === 'AVAILABLE'
-  ) {
+  } else if (query.status === 'ACTIVE' && query.availability === 'AVAILABLE') {
     // Public mode with NO dates — only exclude vehicles that have an active booking
     // overlapping with the EXACT CURRENT MOMENT.
     // If a car is booked for tomorrow, it should still appear on the homepage today.
@@ -155,7 +152,6 @@ const getAllVehicles = async (query: IVehicleQuery) => {
     };
   }
 
-
   const vehicles = await prisma.vehicle.findMany({
     ...builtQuery,
     where: whereClause,
@@ -164,7 +160,7 @@ const getAllVehicles = async (query: IVehicleQuery) => {
 
   const globalPricing = await prisma.pricing.findFirst({ where: { vehicleId: null } });
 
-  const vehiclesWithPricing = vehicles.map(v => ({
+  const vehiclesWithPricing = vehicles.map((v) => ({
     ...v,
     pricing: v.pricing || globalPricing
   }));
@@ -206,7 +202,7 @@ const deleteImageFiles = (imagePaths: string[]) => {
       try {
         fs.unlinkSync(fullPath);
       } catch (err) {
-        console.error(`Failed to delete file: ${fullPath}`, err);
+        logger.error(`Failed to delete file: ${fullPath}`, err);
       }
     }
   });
@@ -240,7 +236,7 @@ const updateVehicle = async (
       await tx.vehicleImage.deleteMany({
         where: { vehicleId: id }
       });
-      
+
       // 2. Insert new images
       await tx.vehicleImage.createMany({
         data: newImages.map((img, idx) => ({
@@ -251,12 +247,12 @@ const updateVehicle = async (
       });
 
       // 3. Delete old physical files
-      const oldImagePaths = existingVehicle.images.map(img => img.path);
+      const oldImagePaths = existingVehicle.images.map((img) => img.path);
       deleteImageFiles(oldImagePaths);
     }
 
     const { features, ...vehicleData } = payload;
-    
+
     // Disconnect all features first if features array is provided
     if (features !== undefined) {
       await tx.vehicle.update({
@@ -269,9 +265,11 @@ const updateVehicle = async (
       where: { id },
       data: {
         ...vehicleData,
-        features: features ? {
-          connect: features.map(id => ({ id }))
-        } : undefined
+        features: features
+          ? {
+              connect: features.map((id) => ({ id }))
+            }
+          : undefined
       },
       include: VEHICLE_INCLUDE
     });
@@ -305,7 +303,7 @@ const updateAvailability = async (id: string, payload: IUpdateAvailabilityPayloa
 
 const deleteVehicle = async (idOrIds: string | string[]) => {
   let ids: string[] = [];
-  
+
   if (Array.isArray(idOrIds)) {
     ids = idOrIds;
   } else if (typeof idOrIds === 'string') {
@@ -331,7 +329,7 @@ const deleteVehicle = async (idOrIds: string | string[]) => {
   });
 
   // Filesystem deletion
-  const imagePaths = existingVehicles.flatMap(v => v.images.map(img => img.path));
+  const imagePaths = existingVehicles.flatMap((v) => v.images.map((img) => img.path));
   deleteImageFiles(imagePaths);
 };
 

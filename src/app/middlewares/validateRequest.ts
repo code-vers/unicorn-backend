@@ -8,9 +8,7 @@ type RequestValidationTarget = {
   cookies: unknown;
 };
 
-const validateRequest = (
-  schema: ZodType<Partial<RequestValidationTarget>>
-): RequestHandler => {
+const validateRequest = (schema: ZodType<Partial<RequestValidationTarget>>): RequestHandler => {
   return async (req, _res, next) => {
     try {
       const parsedData = await schema.parseAsync({
@@ -23,7 +21,7 @@ const validateRequest = (
       if (Object.prototype.hasOwnProperty.call(parsedData, 'body')) {
         req.body = parsedData.body;
       }
-      
+
       if (Object.prototype.hasOwnProperty.call(parsedData, 'cookies')) {
         req.cookies = parsedData.cookies;
       }

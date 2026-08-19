@@ -18,6 +18,9 @@ const createLocation: RequestHandler = catchAsync(async (req, res) => {
 
 const getAllLocations: RequestHandler = catchAsync(async (req, res) => {
   const query = req.query as ILocationQuery;
+  if (req.user?.role !== 'ADMIN') {
+    query.status = 'ACTIVE';
+  }
   const result = await LocationService.getAllLocations(query);
 
   sendResponse(res, {
@@ -32,6 +35,11 @@ const getAllLocations: RequestHandler = catchAsync(async (req, res) => {
 const getLocationById: RequestHandler = catchAsync(async (req, res) => {
   const id = req.params['id'] as string;
   const result = await LocationService.getLocationById(id);
+
+  if (result.status !== 'ACTIVE' && req.user?.role !== 'ADMIN') {
+    res.status(404).json({ success: false, message: 'Location not found.' });
+    return;
+  }
 
   sendResponse(res, {
     statusCode: 200,
@@ -54,7 +62,8 @@ const updateLocation: RequestHandler = catchAsync(async (req, res) => {
 });
 
 const deleteLocation: RequestHandler = catchAsync(async (req, res) => {
-  const idOrIds = Array.isArray(req.body) && req.body.length > 0 ? req.body : req.params['id'] as string;
+  const idOrIds =
+    Array.isArray(req.body) && req.body.length > 0 ? req.body : (req.params['id'] as string);
   await LocationService.deleteLocation(idOrIds);
 
   sendResponse(res, {

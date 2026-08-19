@@ -1,6 +1,14 @@
 import { z } from 'zod';
 
-const VEHICLE_CATEGORIES = ['SALOON', 'SUV', 'VAN', 'LUXURY', 'FOUR_WD', 'CHAUFFEUR_DRIVEN', 'SELF_DRIVEN'] as const;
+const VEHICLE_CATEGORIES = [
+  'SALOON',
+  'SUV',
+  'VAN',
+  'LUXURY',
+  'FOUR_WD',
+  'CHAUFFEUR_DRIVEN',
+  'SELF_DRIVEN'
+] as const;
 const VEHICLE_TRANSMISSIONS = ['AUTOMATIC', 'MANUAL'] as const;
 const VEHICLE_FUEL_TYPES = ['PETROL', 'DIESEL', 'ELECTRIC', 'HYBRID'] as const;
 const VEHICLE_STATUSES = ['ACTIVE', 'INACTIVE'] as const;
@@ -37,41 +45,48 @@ const coerceArray = z.preprocess((val) => {
 }, z.array(z.string()));
 
 const create = z.object({
-  body: z
-    .object({
-      name: z.string({ error: 'Vehicle name is required.' }),
-      category: z.enum(VEHICLE_CATEGORIES, { error: `Category must be one of: ${VEHICLE_CATEGORIES.join(', ')}` }),
-      brand: z.string({ error: 'Brand is required.' }),
-      year: coerceNumber,
-      transmission: z.enum(VEHICLE_TRANSMISSIONS, { error: `Transmission must be one of: ${VEHICLE_TRANSMISSIONS.join(', ')}` }),
-      fuelType: z.enum(VEHICLE_FUEL_TYPES, { error: `Fuel type must be one of: ${VEHICLE_FUEL_TYPES.join(', ')}` }),
-      seatingCapacity: coerceNumber,
-      luggageCapacity: coerceNumber.optional(),
-      description: z.string().optional(),
-      features: coerceArray.optional(),
-      status: z.enum(VEHICLE_STATUSES).optional(),
-      availability: z.enum(VEHICLE_AVAILABILITIES).optional(),
-      isFeatured: coerceBoolean.optional(),
-      locationId: z.string({ error: 'Location ID is required.' }).uuid('Invalid location ID format.')
-    })
-    // In multipart/form-data, empty strings might be sent, strict might reject unexpected fields.
-    // It's safer to not use .strict() for multipart/form-data, or we strip unknowns.
-    // We will use .strip() behavior (default Zod object behavior).
+  body: z.object({
+    name: z.string({ error: 'Vehicle name is required.' }),
+    category: z.enum(VEHICLE_CATEGORIES, {
+      error: `Category must be one of: ${VEHICLE_CATEGORIES.join(', ')}`
+    }),
+    brand: z.string({ error: 'Brand is required.' }),
+    year: coerceNumber,
+    transmission: z.enum(VEHICLE_TRANSMISSIONS, {
+      error: `Transmission must be one of: ${VEHICLE_TRANSMISSIONS.join(', ')}`
+    }),
+    fuelType: z.enum(VEHICLE_FUEL_TYPES, {
+      error: `Fuel type must be one of: ${VEHICLE_FUEL_TYPES.join(', ')}`
+    }),
+    seatingCapacity: coerceNumber,
+    luggageCapacity: coerceNumber.optional(),
+    description: z.string().optional(),
+    features: coerceArray.optional(),
+    status: z.enum(VEHICLE_STATUSES).optional(),
+    availability: z.enum(VEHICLE_AVAILABILITIES).optional(),
+    isFeatured: coerceBoolean.optional(),
+    locationId: z.string({ error: 'Location ID is required.' }).uuid('Invalid location ID format.')
+  })
+  // In multipart/form-data, empty strings might be sent, strict might reject unexpected fields.
+  // It's safer to not use .strict() for multipart/form-data, or we strip unknowns.
+  // We will use .strip() behavior (default Zod object behavior).
 });
 
 const update = z.object({
-  body: z.preprocess((val) => {
-    if (typeof val === 'object' && val !== null) {
-      const sanitized = { ...(val as Record<string, unknown>) };
-      Object.keys(sanitized).forEach((key) => {
-        if (sanitized[key] === '') {
-          delete sanitized[key];
-        }
-      });
-      return sanitized;
-    }
-    return val;
-  }, z.object({
+  body: z.preprocess(
+    (val) => {
+      if (typeof val === 'object' && val !== null) {
+        const sanitized = { ...(val as Record<string, unknown>) };
+        Object.keys(sanitized).forEach((key) => {
+          if (sanitized[key] === '') {
+            delete sanitized[key];
+          }
+        });
+        return sanitized;
+      }
+      return val;
+    },
+    z.object({
       name: z.string().optional(),
       category: z.enum(VEHICLE_CATEGORIES).optional(),
       brand: z.string().optional(),
@@ -86,13 +101,16 @@ const update = z.object({
       availability: z.enum(VEHICLE_AVAILABILITIES).optional(),
       isFeatured: coerceBoolean.optional(),
       locationId: z.string().uuid('Invalid location ID format.').optional()
-    }))
+    })
+  )
 });
 
 const updateAvailability = z.object({
-  body: z.object({
-    availability: z.enum(VEHICLE_AVAILABILITIES, { error: 'Availability status is required.' })
-  }).strict()
+  body: z
+    .object({
+      availability: z.enum(VEHICLE_AVAILABILITIES, { error: 'Availability status is required.' })
+    })
+    .strict()
 });
 
 export const VehicleValidation = {

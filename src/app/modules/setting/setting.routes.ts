@@ -7,16 +7,11 @@ import { SettingValidation } from './setting.validation';
 
 const router = Router();
 
-router.get(
-  '/',
-  auth('ADMIN'),
-  SettingController.getAllSettings
-);
+router.get('/', auth('ADMIN'), SettingController.getAllSettings);
 
-router.get(
-  '/:key',
-  SettingController.getSettingByKey
-);
+router.get('/public', SettingController.getPublicSettings);
+
+router.get('/:key', auth('ADMIN'), SettingController.getSettingByKey);
 
 router.post(
   '/',
@@ -25,10 +20,6 @@ router.post(
   SettingController.upsertSetting
 );
 
-router.delete(
-  '/:key',
-  auth('ADMIN'),
-  SettingController.deleteSetting
-);
+router.delete('/:key', auth('ADMIN'), SettingController.deleteSetting);
 
 export const SettingRoutes = router;

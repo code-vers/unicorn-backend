@@ -1,6 +1,15 @@
 import prisma from '../../utils/prisma';
 import type { ISystemSettingPayload } from './setting.interface';
 
+const publicSettingKeys = [
+  'SUPPORT_PHONE',
+  'WHATSAPP_PHONE',
+  'SUPPORT_EMAIL',
+  'OFFICE_HOURS',
+  'PICKUP_INSTRUCTIONS',
+  'RETURN_INSTRUCTIONS'
+] as const;
+
 const getAllSettings = async () => {
   return prisma.systemSetting.findMany();
 };
@@ -8,6 +17,13 @@ const getAllSettings = async () => {
 const getSettingByKey = async (key: string) => {
   return prisma.systemSetting.findUnique({
     where: { key }
+  });
+};
+
+const getPublicSettings = async () => {
+  return prisma.systemSetting.findMany({
+    where: { key: { in: [...publicSettingKeys] } },
+    select: { key: true, value: true, description: true }
   });
 };
 
@@ -35,6 +51,7 @@ const deleteSetting = async (key: string) => {
 export const SettingService = {
   getAllSettings,
   getSettingByKey,
+  getPublicSettings,
   upsertSetting,
   deleteSetting
 };

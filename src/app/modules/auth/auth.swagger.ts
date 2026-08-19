@@ -2,7 +2,15 @@ import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
 import { AuthValidation } from './auth.validation';
-import { createErrorResponse, createSuccessResponse, Error400, Error401, Error403, Error409, Error500 } from '../../utils/swaggerHelpers';
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  Error400,
+  Error401,
+  Error403,
+  Error409,
+  Error500
+} from '../../utils/swaggerHelpers';
 
 export const registerAuthSwagger = (registry: OpenAPIRegistry, bearerAuth: any) => {
   const UserResponseSchema = z.object({
@@ -27,7 +35,11 @@ export const registerAuthSwagger = (registry: OpenAPIRegistry, bearerAuth: any) 
       }
     },
     responses: {
-      201: createSuccessResponse(UserResponseSchema, 'User registered successfully', 'User registered successfully.'),
+      201: createSuccessResponse(
+        UserResponseSchema,
+        'User registered successfully',
+        'User registered successfully.'
+      ),
       400: Error400,
       409: Error409,
       500: Error500
@@ -50,10 +62,7 @@ export const registerAuthSwagger = (registry: OpenAPIRegistry, bearerAuth: any) 
     },
     responses: {
       200: createSuccessResponse(
-        z.object({
-          accessToken: z.string().openapi({ example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' }),
-          user: UserResponseSchema
-        }),
+        z.object({ user: UserResponseSchema }),
         'User logged in successfully',
         'User logged in successfully.'
       ),
@@ -68,12 +77,11 @@ export const registerAuthSwagger = (registry: OpenAPIRegistry, bearerAuth: any) 
     path: '/api/v1/auth/refresh-token',
     tags: ['Auth'],
     summary: 'Refresh access token',
-    description: 'Requires a valid refreshToken in cookies.',
+    description:
+      'Requires a valid HttpOnly refreshToken cookie and renews the HttpOnly accessToken cookie.',
     responses: {
       200: createSuccessResponse(
-        z.object({
-          accessToken: z.string().openapi({ example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' })
-        }),
+        null,
         'Access token generated successfully',
         'Access token generated successfully.'
       ),
@@ -109,7 +117,11 @@ export const registerAuthSwagger = (registry: OpenAPIRegistry, bearerAuth: any) 
       }
     },
     responses: {
-      200: createSuccessResponse(null, 'Password changed successfully', 'Password changed successfully.'),
+      200: createSuccessResponse(
+        null,
+        'Password changed successfully',
+        'Password changed successfully.'
+      ),
       400: Error400,
       401: Error401,
       403: createErrorResponse('Forbidden', 'Old password does not match.'),
@@ -132,7 +144,11 @@ export const registerAuthSwagger = (registry: OpenAPIRegistry, bearerAuth: any) 
       }
     },
     responses: {
-      200: createSuccessResponse(null, 'Code sent successfully', 'If the email exists, a password reset code has been sent.'),
+      200: createSuccessResponse(
+        null,
+        'Code sent successfully',
+        'If the email exists, a password reset code has been sent.'
+      ),
       400: Error400,
       500: Error500
     }
@@ -180,7 +196,11 @@ export const registerAuthSwagger = (registry: OpenAPIRegistry, bearerAuth: any) 
       }
     },
     responses: {
-      200: createSuccessResponse(null, 'Password reset successfully', 'Password has been reset successfully.'),
+      200: createSuccessResponse(
+        null,
+        'Password reset successfully',
+        'Password has been reset successfully.'
+      ),
       400: createErrorResponse('Bad Request', 'Invalid or expired reset token.'),
       500: Error500
     }
