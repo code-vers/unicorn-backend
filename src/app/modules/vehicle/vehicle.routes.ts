@@ -13,7 +13,7 @@ const upload = createUploader('vehicles');
 router.post(
   '/',
   auth('ADMIN'),
-  upload.array('images', 5), // Max 5 images per upload
+  upload.array('images', 5),
   validateRequest(VehicleValidation.create),
   VehicleController.createVehicle
 );
