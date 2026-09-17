@@ -15,22 +15,12 @@ import type {
 } from './vehicle.interface';
 
 const VEHICLE_INCLUDE = {
-  location: { select: { id: true, name: true, city: true } },
   images: { select: { id: true, path: true, order: true }, orderBy: { order: 'asc' } },
   pricing: true,
   features: true
 } satisfies Prisma.VehicleInclude;
 
 const createVehicle = async (payload: ICreateVehiclePayload, images: IVehicleImagePayload[]) => {
-  // Check if location exists
-  const location = await prisma.location.findFirst({
-    where: { id: payload.locationId, isDeleted: false }
-  });
-
-  if (!location) {
-    throw new AppError(404, 'Location not found.');
-  }
-
   const result = await prisma.$transaction(async (tx) => {
     const { features, ...vehicleData } = payload;
     const vehicle = await tx.vehicle.create({
@@ -220,13 +210,6 @@ const updateVehicle = async (
 
   if (!existingVehicle) {
     throw new AppError(404, 'Vehicle not found.');
-  }
-
-  if (payload.locationId) {
-    const location = await prisma.location.findFirst({
-      where: { id: payload.locationId, isDeleted: false }
-    });
-    if (!location) throw new AppError(404, 'Location not found.');
   }
 
   const result = await prisma.$transaction(async (tx) => {

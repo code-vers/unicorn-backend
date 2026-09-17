@@ -15,7 +15,6 @@ export interface ICreateVehiclePayload {
   name: string;
   category: VehicleCategory;
   brand: string;
-  year: number;
   transmission: VehicleTransmission;
   fuelType: VehicleFuelType;
   seatingCapacity: number;
@@ -25,7 +24,6 @@ export interface ICreateVehiclePayload {
   status?: VehicleStatus;
   availability?: VehicleAvailability;
   isFeatured?: boolean;
-  locationId: string;
 }
 
 export type IUpdateVehiclePayload = Partial<ICreateVehiclePayload>;
@@ -39,7 +37,6 @@ export interface IVehicleQuery {
   category?: VehicleCategory;
   transmission?: VehicleTransmission;
   fuelType?: VehicleFuelType;
-  locationId?: string;
   availability?: VehicleAvailability;
   status?: VehicleStatus;
   isFeatured?: boolean | string;
@@ -72,7 +69,6 @@ export interface IVehicleResponse {
   name: string;
   category: VehicleCategory;
   brand: string;
-  year: number;
   transmission: VehicleTransmission;
   fuelType: VehicleFuelType;
   seatingCapacity: number;
@@ -82,9 +78,7 @@ export interface IVehicleResponse {
   status: VehicleStatus;
   availability: VehicleAvailability;
   isFeatured: boolean;
-  locationId: string;
   createdAt: Date;
   updatedAt: Date;
   images?: IVehicleImageResponse[];
-  location?: ILocationBasicResponse;
 }

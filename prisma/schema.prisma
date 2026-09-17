@@ -78,8 +78,6 @@ model Location {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
-  vehicles Vehicle[]
-
   // Drop-off charges relations
   pickupCharges  DropOffCharge[] @relation("PickupLocationRelations")
   dropOffCharges DropOffCharge[] @relation("DropOffLocationRelations")
@@ -139,7 +137,6 @@ model Vehicle {
   name            String
   category        VehicleCategory
   brand           String
-  year            Int
   transmission    VehicleTransmission
   fuelType        VehicleFuelType
   seatingCapacity Int
@@ -154,10 +151,6 @@ model Vehicle {
   status       VehicleStatus       @default(ACTIVE)
   availability VehicleAvailability @default(AVAILABLE)
   isFeatured   Boolean             @default(false)
-
-  // Location
-  locationId String
-  location   Location @relation(fields: [locationId], references: [id])
 
   // Images
   images VehicleImage[]

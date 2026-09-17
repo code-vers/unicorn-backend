@@ -17,12 +17,6 @@ const VehicleImageSchema = z.object({
   order: z.number().openapi({ example: 0 })
 });
 
-const LocationBasicSchema = z.object({
-  id: z.string().openapi({ example: 'loc-1234' }),
-  name: z.string().openapi({ example: 'Nairobi Office' }),
-  city: z.string().openapi({ example: 'Nairobi' })
-});
-
 const VehicleSchema = z.object({
   id: z.string().openapi({ example: 'veh-1234' }),
   name: z.string().openapi({ example: 'Toyota Camry' }),
@@ -36,7 +30,6 @@ const VehicleSchema = z.object({
     'SELF_DRIVEN'
   ]),
   brand: z.string().openapi({ example: 'Toyota' }),
-  year: z.number().openapi({ example: 2022 }),
   transmission: z.enum(['AUTOMATIC', 'MANUAL']),
   fuelType: z.enum(['PETROL', 'DIESEL', 'ELECTRIC', 'HYBRID']),
   seatingCapacity: z.number().openapi({ example: 5 }),
@@ -46,11 +39,9 @@ const VehicleSchema = z.object({
   status: z.enum(['ACTIVE', 'INACTIVE']),
   availability: z.enum(['AVAILABLE', 'RENTED', 'MAINTENANCE']),
   isFeatured: z.boolean().openapi({ example: false }),
-  locationId: z.string(),
   createdAt: z.string(),
   updatedAt: z.string(),
-  images: z.array(VehicleImageSchema).optional(),
-  location: LocationBasicSchema.optional()
+  images: z.array(VehicleImageSchema).optional()
 });
 
 const CreateVehicleMultipartSchema = z.object({
@@ -65,7 +56,6 @@ const CreateVehicleMultipartSchema = z.object({
     'SELF_DRIVEN'
   ]),
   brand: z.string().openapi({ example: 'Toyota' }),
-  year: z.number().openapi({ example: 2022 }),
   transmission: z.enum(['AUTOMATIC', 'MANUAL']),
   fuelType: z.enum(['PETROL', 'DIESEL', 'ELECTRIC', 'HYBRID']),
   seatingCapacity: z.number().openapi({ example: 5 }),
@@ -78,7 +68,6 @@ const CreateVehicleMultipartSchema = z.object({
   status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
   availability: z.enum(['AVAILABLE', 'RENTED', 'MAINTENANCE']).optional(),
   isFeatured: z.boolean().optional(),
-  locationId: z.string().openapi({ example: 'loc-uuid-123' }),
   images: z
     .any()
     .openapi({ type: 'array', items: { type: 'string', format: 'binary' } })
@@ -139,7 +128,6 @@ export const registerVehicleSwagger = (
           .optional(),
         transmission: z.enum(['AUTOMATIC', 'MANUAL']).optional(),
         fuelType: z.enum(['PETROL', 'DIESEL', 'ELECTRIC', 'HYBRID']).optional(),
-        locationId: z.string().optional(),
         availability: z.enum(['AVAILABLE', 'RENTED', 'MAINTENANCE']).optional(),
         status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
         isFeatured: z.string().optional(),

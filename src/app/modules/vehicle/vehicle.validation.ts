@@ -10,7 +10,7 @@ const VEHICLE_CATEGORIES = [
   'SELF_DRIVEN'
 ] as const;
 const VEHICLE_TRANSMISSIONS = ['AUTOMATIC', 'MANUAL'] as const;
-const VEHICLE_FUEL_TYPES = ['PETROL', 'DIESEL', 'ELECTRIC', 'HYBRID'] as const;
+const VEHICLE_FUEL_TYPES = ['PETROL', 'DIESEL', 'ELECTRIC', 'HYBRID', 'DIESEL_PETROL'] as const;
 const VEHICLE_STATUSES = ['ACTIVE', 'INACTIVE'] as const;
 const VEHICLE_AVAILABILITIES = ['AVAILABLE', 'RENTED', 'MAINTENANCE'] as const;
 
@@ -45,31 +45,28 @@ const coerceArray = z.preprocess((val) => {
 }, z.array(z.string()));
 
 const create = z.object({
-  body: z.object({
-    name: z.string({ error: 'Vehicle name is required.' }),
-    category: z.enum(VEHICLE_CATEGORIES, {
-      error: `Category must be one of: ${VEHICLE_CATEGORIES.join(', ')}`
-    }),
-    brand: z.string({ error: 'Brand is required.' }),
-    year: coerceNumber,
-    transmission: z.enum(VEHICLE_TRANSMISSIONS, {
-      error: `Transmission must be one of: ${VEHICLE_TRANSMISSIONS.join(', ')}`
-    }),
-    fuelType: z.enum(VEHICLE_FUEL_TYPES, {
-      error: `Fuel type must be one of: ${VEHICLE_FUEL_TYPES.join(', ')}`
-    }),
-    seatingCapacity: coerceNumber,
-    luggageCapacity: coerceNumber.optional(),
-    description: z.string().optional(),
-    features: coerceArray.optional(),
-    status: z.enum(VEHICLE_STATUSES).optional(),
-    availability: z.enum(VEHICLE_AVAILABILITIES).optional(),
-    isFeatured: coerceBoolean.optional(),
-    locationId: z.string({ error: 'Location ID is required.' }).uuid('Invalid location ID format.')
-  })
-  // In multipart/form-data, empty strings might be sent, strict might reject unexpected fields.
-  // It's safer to not use .strict() for multipart/form-data, or we strip unknowns.
-  // We will use .strip() behavior (default Zod object behavior).
+  body: z
+    .object({
+      name: z.string({ error: 'Vehicle name is required.' }),
+      category: z.enum(VEHICLE_CATEGORIES, {
+        error: `Category must be one of: ${VEHICLE_CATEGORIES.join(', ')}`
+      }),
+      brand: z.string({ error: 'Brand is required.' }),
+      transmission: z.enum(VEHICLE_TRANSMISSIONS, {
+        error: `Transmission must be one of: ${VEHICLE_TRANSMISSIONS.join(', ')}`
+      }),
+      fuelType: z.enum(VEHICLE_FUEL_TYPES, {
+        error: `Fuel type must be one of: ${VEHICLE_FUEL_TYPES.join(', ')}`
+      }),
+      seatingCapacity: coerceNumber,
+      luggageCapacity: coerceNumber.optional(),
+      description: z.string().optional(),
+      features: coerceArray.optional(),
+      status: z.enum(VEHICLE_STATUSES).optional(),
+      availability: z.enum(VEHICLE_AVAILABILITIES).optional(),
+      isFeatured: coerceBoolean.optional()
+    })
+    .strict()
 });
 
 const update = z.object({
@@ -86,22 +83,22 @@ const update = z.object({
       }
       return val;
     },
-    z.object({
-      name: z.string().optional(),
-      category: z.enum(VEHICLE_CATEGORIES).optional(),
-      brand: z.string().optional(),
-      year: coerceNumber.optional(),
-      transmission: z.enum(VEHICLE_TRANSMISSIONS).optional(),
-      fuelType: z.enum(VEHICLE_FUEL_TYPES).optional(),
-      seatingCapacity: coerceNumber.optional(),
-      luggageCapacity: coerceNumber.optional(),
-      description: z.string().optional(),
-      features: coerceArray.optional(),
-      status: z.enum(VEHICLE_STATUSES).optional(),
-      availability: z.enum(VEHICLE_AVAILABILITIES).optional(),
-      isFeatured: coerceBoolean.optional(),
-      locationId: z.string().uuid('Invalid location ID format.').optional()
-    })
+    z
+      .object({
+        name: z.string().optional(),
+        category: z.enum(VEHICLE_CATEGORIES).optional(),
+        brand: z.string().optional(),
+        transmission: z.enum(VEHICLE_TRANSMISSIONS).optional(),
+        fuelType: z.enum(VEHICLE_FUEL_TYPES).optional(),
+        seatingCapacity: coerceNumber.optional(),
+        luggageCapacity: coerceNumber.optional(),
+        description: z.string().optional(),
+        features: coerceArray.optional(),
+        status: z.enum(VEHICLE_STATUSES).optional(),
+        availability: z.enum(VEHICLE_AVAILABILITIES).optional(),
+        isFeatured: coerceBoolean.optional()
+      })
+      .strict()
   )
 });
 
