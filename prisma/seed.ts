@@ -31,6 +31,19 @@ async function main() {
   });
 
   logger.info(`Admin user ensured in database: ${adminUser.email}`);
+
+  // Seed default TAX_PERCENTAGE if not already present
+  await prisma.systemSetting.upsert({
+    where: { key: 'TAX_PERCENTAGE' },
+    update: {}, // Don't override if already changed by admin
+    create: {
+      key: 'TAX_PERCENTAGE',
+      value: '16',
+      description: 'Default tax percentage applied to bookings'
+    }
+  });
+  logger.info('TAX_PERCENTAGE configuration seeded.');
+
   logger.info('Seeding finished.');
 }
 
