@@ -8,7 +8,6 @@ export interface ICreateDropOffChargePayload {
   chargeType?: ChargeType;
   amount: number;
   distanceKm?: number;
-  seasonalMultiplier?: number;
   status?: DropOffChargeStatus;
 }
 

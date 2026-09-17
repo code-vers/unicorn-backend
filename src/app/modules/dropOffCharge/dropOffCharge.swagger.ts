@@ -34,7 +34,6 @@ const DropOffChargeSchema = z.object({
   chargeType: z.enum(CHARGE_TYPES).openapi({ example: 'FIXED' }),
   amount: z.number().openapi({ example: 5000 }),
   distanceKm: z.number().nullable().openapi({ example: 24.5 }),
-  seasonalMultiplier: z.number().nullable().openapi({ example: 1.5 }),
   status: z.enum(STATUSES).openapi({ example: 'ACTIVE' }),
   createdAt: z.string(),
   updatedAt: z.string()
@@ -48,7 +47,6 @@ const CreateDropOffChargeSchema = z.object({
   chargeType: z.enum(CHARGE_TYPES).optional().openapi({ example: 'FIXED' }),
   amount: z.number().openapi({ example: 5000 }),
   distanceKm: z.number().positive().optional().openapi({ example: 24.5 }),
-  seasonalMultiplier: z.number().positive().optional().openapi({ example: 1.5 }),
   status: z.enum(STATUSES).optional().openapi({ example: 'ACTIVE' })
 });
 
