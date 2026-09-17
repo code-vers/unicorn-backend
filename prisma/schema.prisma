@@ -201,6 +201,7 @@ enum VehicleFuelType {
   DIESEL
   ELECTRIC
   HYBRID
+  DIESEL_PETROL
 }
 
 enum VehicleStatus {
