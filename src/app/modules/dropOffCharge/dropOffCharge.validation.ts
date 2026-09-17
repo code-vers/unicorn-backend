@@ -23,7 +23,6 @@ const create = z.object({
       chargeType: z.enum(CHARGE_TYPES).optional(),
       amount: z.number().nonnegative(),
       distanceKm: z.number().positive().optional(),
-      seasonalMultiplier: z.number().positive().optional(),
       status: z.enum(STATUSES).optional()
     })
     .refine((data) => data.pickupLocationId !== data.dropOffLocationId, {
@@ -46,7 +45,6 @@ const update = z.object({
       chargeType: z.enum(CHARGE_TYPES).optional(),
       amount: z.number().nonnegative().optional(),
       distanceKm: z.number().positive().nullable().optional(),
-      seasonalMultiplier: z.number().positive().nullable().optional(),
       status: z.enum(STATUSES).optional()
     })
     .refine(

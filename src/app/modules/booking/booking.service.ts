@@ -116,13 +116,14 @@ const calculateCosts = async (
   } else if (durationDays >= 7 && pricing.weeklyRate.toNumber() > 0) {
     rentalCost = pricing.weeklyRate.toNumber() * (durationDays / 7);
   }
-  rentalCost *= pricing.seasonalMultiplier.toNumber();
 
   // Apply Discount if applicable
   let discountAmount = 0;
   if (pricing.discountPercentage.toNumber() > 0) {
+    const now = new Date();
     const isDiscountValid =
-      !pricing.discountValidUntil || new Date(pricing.discountValidUntil) >= new Date();
+      (!pricing.discountValidFrom || new Date(pricing.discountValidFrom) <= now) &&
+      (!pricing.discountValidUntil || new Date(pricing.discountValidUntil) >= now);
     if (isDiscountValid) {
       discountAmount = rentalCost * (pricing.discountPercentage.toNumber() / 100);
       rentalCost -= discountAmount;
@@ -162,7 +163,6 @@ const calculateCosts = async (
       } else {
         dropOffFee = charge.amount.toNumber();
       }
-      dropOffFee *= charge.seasonalMultiplier?.toNumber() ?? 1;
     }
   }
 
@@ -646,11 +646,50 @@ const updateBookingStatus = async (id: string, payload: IBookingUpdateStatusPayl
       }
     }
 
+    let { rentalCost, taxAmount, totalAmount, paymentStatus } = booking;
+
+    if (payload.status === 'COMPLETED') {
+      const now = new Date();
+      const dropOffDate = new Date(booking.dropOffDate);
+      const diffMs = now.getTime() - dropOffDate.getTime();
+      const diffHours = diffMs / (1000 * 60 * 60);
+
+      if (diffHours > 2) {
+        let pricing = await tx.pricing.findUnique({ where: { vehicleId: booking.vehicleId } });
+        if (!pricing) {
+          pricing = await tx.pricing.findFirst({ where: { vehicleId: null } });
+        }
+        
+        if (pricing) {
+          const extraCharge = pricing.dailyRate.toNumber();
+          rentalCost = new Prisma.Decimal(rentalCost.toNumber() + extraCharge);
+
+          const taxSetting = await tx.systemSetting.findUnique({ where: { key: 'TAX_PERCENTAGE' } });
+          const taxPercentage = Number(taxSetting?.value ?? config.pricing.taxPercentage);
+
+          const subtotal = rentalCost.toNumber() + booking.pickupFee.toNumber() + booking.dropOffFee.toNumber() + booking.addonsCost.toNumber();
+          const newTaxAmount = subtotal * (taxPercentage / 100);
+          const newTotalAmount = subtotal + newTaxAmount;
+
+          taxAmount = new Prisma.Decimal(newTaxAmount);
+          totalAmount = new Prisma.Decimal(newTotalAmount);
+
+          if (newTotalAmount > booking.amountPaid.toNumber()) {
+            paymentStatus = 'PENDING';
+          }
+        }
+      }
+    }
+
     const updatedBooking = await tx.booking.update({
       where: { id },
       data: {
         bookingStatus: payload.status,
-        assignedDriverId: payload.assignedDriverId || booking.assignedDriverId
+        assignedDriverId: payload.assignedDriverId || booking.assignedDriverId,
+        rentalCost,
+        taxAmount,
+        totalAmount,
+        paymentStatus
       },
       include: {
         vehicle: true,

@@ -18,7 +18,6 @@ const DROPOFF_CHARGE_SELECT = {
   chargeType: true,
   amount: true,
   distanceKm: true,
-  seasonalMultiplier: true,
   status: true,
   createdAt: true,
   updatedAt: true,

@@ -7,13 +7,7 @@ const savePricing = z.object({
       dailyRate: z.number({ error: 'Daily rate is required' }).nonnegative(),
       weeklyRate: z.number({ error: 'Weekly rate is required' }).nonnegative(),
       monthlyRate: z.number({ error: 'Monthly rate is required' }).nonnegative(),
-      selfDriveRate: z.number({ error: 'Self drive rate is required' }).nonnegative(),
       chauffeurRate: z.number({ error: 'Chauffeur rate is required' }).nonnegative(),
-      seasonalMultiplier: z.number().positive().optional(),
-      extraDayCharge: z.number({ error: 'Extra day charge is required' }).nonnegative(),
-      lateReturnHourlyCharge: z
-        .number({ error: 'Late return hourly charge is required' })
-        .nonnegative(),
       securityDeposit: z.number({ error: 'Security deposit is required' }).nonnegative(),
       deliveryCollectionCharge: z
         .number({ error: 'Delivery collection charge is required' })
@@ -21,7 +15,6 @@ const savePricing = z.object({
       airportPickupDropCharge: z
         .number({ error: 'Airport pickup drop charge is required' })
         .nonnegative(),
-      extraMileageCharge: z.number({ error: 'Extra mileage charge is required' }).nonnegative(),
       gpsCharge: z.number({ error: 'GPS charge is required' }).nonnegative(),
       fullInsuranceCharge: z.number({ error: 'Insurance charge is required' }).nonnegative(),
       additionalDriverCharge: z
@@ -29,6 +22,7 @@ const savePricing = z.object({
         .nonnegative(),
       childSeatCharge: z.number({ error: 'Child-seat charge is required' }).nonnegative(),
       discountPercentage: z.number().min(0).max(100).optional(),
+      discountValidFrom: z.string().datetime().nullable().optional(),
       discountValidUntil: z.string().datetime().nullable().optional()
     })
     .strict()
