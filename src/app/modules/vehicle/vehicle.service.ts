@@ -306,10 +306,33 @@ const deleteVehicle = async (idOrIds: string | string[]) => {
     throw new AppError(404, 'Vehicle(s) not found.');
   }
 
-  // DB deletion (Cascade handles vehicle_images rows)
-  await prisma.vehicle.deleteMany({
-    where: { id: { in: ids } }
+  const bookingCount = await prisma.booking.count({
+    where: { vehicleId: { in: ids } }
   });
+
+  if (bookingCount > 0) {
+    throw new AppError(
+      409,
+      ids.length === 1
+        ? 'This vehicle has bookings and cannot be deleted. Set it to inactive instead.'
+        : 'One or more selected vehicles have bookings and cannot be deleted. Set them to inactive instead.'
+    );
+  }
+
+  // DB deletion (Cascade handles vehicle_images rows)
+  try {
+    await prisma.vehicle.deleteMany({
+      where: { id: { in: ids } }
+    });
+  } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2003') {
+      throw new AppError(
+        409,
+        'One or more selected vehicles are linked to existing records and cannot be deleted.'
+      );
+    }
+    throw error;
+  }
 
   // Filesystem deletion
   const imagePaths = existingVehicles.flatMap((v) => v.images.map((img) => img.path));
