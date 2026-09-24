@@ -322,6 +322,7 @@ const handleWebhook = async (rawBody: Buffer, signature: string) => {
           amountPaid: newAmountPaid,
           paymentStatus: isFullyPaid ? 'SUCCESS' : 'PENDING',
           bookingStatus: isFullyPaid ? 'CONFIRMED' : currentBooking.bookingStatus,
+          checkoutSessionId: isExtension ? currentBooking.checkoutSessionId : null,
           checkoutExpiresAt: isExtension ? currentBooking.checkoutExpiresAt : null
         }
       });

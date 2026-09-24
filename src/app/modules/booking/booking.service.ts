@@ -52,7 +52,17 @@ export const buildMyBookingsWhere = (
     {
       OR: [
         { checkoutSessionId: null },
-        { paymentStatus: { in: [PaymentStatus.SUCCESS, PaymentStatus.REFUNDED] } }
+        { paymentStatus: { in: [PaymentStatus.SUCCESS, PaymentStatus.REFUNDED] } },
+        {
+          bookingStatus: {
+            in: [
+              BookingStatus.CONFIRMED,
+              BookingStatus.ONGOING,
+              BookingStatus.COMPLETED,
+              BookingStatus.CANCELLED
+            ]
+          }
+        }
       ]
     }
   ]
@@ -496,7 +506,8 @@ const modifyBooking = async (
     if (
       role !== 'ADMIN' &&
       booking.checkoutSessionId &&
-      booking.paymentStatus === PaymentStatus.PENDING
+      booking.paymentStatus === PaymentStatus.PENDING &&
+      booking.bookingStatus === BookingStatus.PENDING
     ) {
       throw new AppError(409, 'Complete or cancel checkout before modifying this booking.');
     }
@@ -681,6 +692,8 @@ const updateBookingStatus = async (id: string, payload: IBookingUpdateStatusPayl
       }
     }
 
+    const isNowActive = ['CONFIRMED', 'ONGOING'].includes(payload.status);
+
     const updatedBooking = await tx.booking.update({
       where: { id },
       data: {
@@ -689,7 +702,9 @@ const updateBookingStatus = async (id: string, payload: IBookingUpdateStatusPayl
         rentalCost,
         taxAmount,
         totalAmount,
-        paymentStatus
+        paymentStatus,
+        checkoutSessionId: isNowActive ? null : booking.checkoutSessionId,
+        checkoutExpiresAt: isNowActive ? null : booking.checkoutExpiresAt
       },
       include: {
         vehicle: true,
