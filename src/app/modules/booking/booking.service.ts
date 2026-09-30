@@ -543,11 +543,8 @@ const modifyBooking = async (
     ) {
       throw new AppError(409, 'Complete or cancel checkout before modifying this booking.');
     }
-    if (!['PENDING', 'CONFIRMED'].includes(booking.bookingStatus)) {
-      throw new AppError(409, 'Only pending or confirmed bookings can be modified.');
-    }
-    if (booking.pickupDate <= new Date()) {
-      throw new AppError(409, 'A booking cannot be modified after its pickup time.');
+    if (!['PENDING', 'CONFIRMED', 'ONGOING'].includes(booking.bookingStatus)) {
+      throw new AppError(409, 'Only pending, confirmed, or ongoing bookings can be modified.');
     }
 
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${booking.vehicleId}))`;
