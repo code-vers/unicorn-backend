@@ -109,6 +109,16 @@ const calculateCosts = async (
     throw new AppError(400, 'Pickup or drop-off location is unavailable.');
   }
 
+  // Fetch full location records for type-based fee logic
+  const [pickupLocation, dropOffLocation] = await Promise.all([
+    db.location.findUnique({ where: { id: payload.pickupLocationId } }),
+    db.location.findUnique({ where: { id: payload.dropOffLocationId } })
+  ]);
+
+  if (!pickupLocation || !dropOffLocation) {
+    throw new AppError(400, 'Pickup or drop-off location not found.');
+  }
+
   const globalPricing = await db.pricing.findFirst({
     where: { vehicleId: null }
   });
@@ -183,6 +193,20 @@ const calculateCosts = async (
   if (payload.hasAdditionalDriver) addonsCost += pricing.additionalDriverCharge.toNumber();
   if (payload.hasChildSeat) addonsCost += pricing.childSeatCharge.toNumber();
 
+  // Calculate Chauffeur Fee
+  const isChauffeurDriven = payload.isChauffeurDriven ?? false;
+  const chauffeurFee = isChauffeurDriven ? pricing.chauffeurRate.toNumber() * durationDays : 0;
+
+  // Calculate Airport Fee — applies when pickup location is an AIRPORT
+  const airportFee = pickupLocation.locationType === 'AIRPORT'
+    ? pricing.airportPickupDropCharge.toNumber()
+    : 0;
+
+  // Calculate Delivery Fee — applies when pickup or drop-off is outside the OFFICE
+  const needsDelivery =
+    pickupLocation.locationType !== 'OFFICE' || dropOffLocation.locationType !== 'OFFICE';
+  const deliveryFee = needsDelivery ? pricing.deliveryCollectionCharge.toNumber() : 0;
+
   // Fetch Tax Percentage
   const taxSetting = await db.systemSetting.findUnique({ where: { key: 'TAX_PERCENTAGE' } });
   const taxPercentage = Number(taxSetting?.value ?? config.pricing.taxPercentage);
@@ -190,7 +214,7 @@ const calculateCosts = async (
     throw new AppError(500, 'Tax configuration is missing or invalid.');
   }
 
-  const subtotal = rentalCost + pickupFee + dropOffFee + addonsCost;
+  const subtotal = rentalCost + pickupFee + dropOffFee + addonsCost + chauffeurFee + airportFee + deliveryFee;
   const taxAmount = subtotal * (taxPercentage / 100);
   const totalAmount = subtotal + taxAmount;
 
@@ -199,6 +223,10 @@ const calculateCosts = async (
     rentalCost,
     pickupFee,
     dropOffFee,
+    chauffeurFee,
+    airportFee,
+    deliveryFee,
+    isChauffeurDriven,
     addonsCost,
     subtotal,
     taxPercentage,
@@ -258,7 +286,11 @@ const createBooking = async (
         rentalCost: costs.rentalCost,
         pickupFee: costs.pickupFee,
         dropOffFee: costs.dropOffFee,
+        chauffeurFee: costs.chauffeurFee,
+        airportFee: costs.airportFee,
+        deliveryFee: costs.deliveryFee,
 
+        isChauffeurDriven: costs.isChauffeurDriven,
         hasGps: payload.hasGps,
         hasFullInsurance: payload.hasFullInsurance,
         hasAdditionalDriver: payload.hasAdditionalDriver,

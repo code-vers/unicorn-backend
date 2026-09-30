@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "bookings" ADD COLUMN     "airportFee" DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+ADD COLUMN     "chauffeurFee" DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+ADD COLUMN     "deliveryFee" DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+ADD COLUMN     "isChauffeurDriven" BOOLEAN NOT NULL DEFAULT false;

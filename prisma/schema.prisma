@@ -313,11 +313,15 @@ model Booking {
   dropOffDate DateTime
 
   // Pricing Breakdown
-  rentalCost Decimal @db.Decimal(10, 2)
-  pickupFee  Decimal @db.Decimal(10, 2)
-  dropOffFee Decimal @db.Decimal(10, 2)
+  rentalCost   Decimal @db.Decimal(10, 2)
+  pickupFee    Decimal @db.Decimal(10, 2)
+  dropOffFee   Decimal @db.Decimal(10, 2)
+  chauffeurFee Decimal @default(0.00) @db.Decimal(10, 2)
+  airportFee   Decimal @default(0.00) @db.Decimal(10, 2)
+  deliveryFee  Decimal @default(0.00) @db.Decimal(10, 2)
 
-  // Add-ons & Extras (Flags)
+  // Drive type & Add-ons
+  isChauffeurDriven   Boolean @default(false)
   hasGps              Boolean @default(false)
   hasFullInsurance    Boolean @default(false)
   hasAdditionalDriver Boolean @default(false)

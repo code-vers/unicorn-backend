@@ -6,6 +6,7 @@ export interface IBookingCalculatePayload {
   dropOffLocationId: string;
   pickupDate: string;
   dropOffDate: string;
+  isChauffeurDriven?: boolean;
   hasGps?: boolean;
   hasFullInsurance?: boolean;
   hasAdditionalDriver?: boolean;
@@ -46,6 +47,7 @@ export interface IPaymentPayload {
 
 export interface IBookingModifyPayload {
   dropOffDate?: string;
+  isChauffeurDriven?: boolean;
   hasGps?: boolean;
   hasFullInsurance?: boolean;
   hasAdditionalDriver?: boolean;

@@ -6,6 +6,7 @@ const dateTime = z.string().refine((value) => Number.isFinite(Date.parse(value))
 });
 
 const bookingOptions = {
+  isChauffeurDriven: z.boolean().optional(),
   hasGps: z.boolean().optional(),
   hasFullInsurance: z.boolean().optional(),
   hasAdditionalDriver: z.boolean().optional(),
