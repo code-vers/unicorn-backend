@@ -198,9 +198,8 @@ const calculateCosts = async (
   const chauffeurFee = isChauffeurDriven ? pricing.chauffeurRate.toNumber() * durationDays : 0;
 
   // Calculate Airport Fee — applies when pickup location is an AIRPORT
-  const airportFee = pickupLocation.locationType === 'AIRPORT'
-    ? pricing.airportPickupDropCharge.toNumber()
-    : 0;
+  const airportFee =
+    pickupLocation.locationType === 'AIRPORT' ? pricing.airportPickupDropCharge.toNumber() : 0;
 
   // Calculate Delivery Fee — applies when pickup or drop-off is outside the OFFICE
   const needsDelivery =
@@ -214,7 +213,8 @@ const calculateCosts = async (
     throw new AppError(500, 'Tax configuration is missing or invalid.');
   }
 
-  const subtotal = rentalCost + pickupFee + dropOffFee + addonsCost + chauffeurFee + airportFee + deliveryFee;
+  const subtotal =
+    rentalCost + pickupFee + dropOffFee + addonsCost + chauffeurFee + airportFee + deliveryFee;
   const taxAmount = subtotal * (taxPercentage / 100);
   const totalAmount = subtotal + taxAmount;
 
@@ -703,15 +703,21 @@ const updateBookingStatus = async (id: string, payload: IBookingUpdateStatusPayl
         if (!pricing) {
           pricing = await tx.pricing.findFirst({ where: { vehicleId: null } });
         }
-        
+
         if (pricing) {
           const extraCharge = pricing.dailyRate.toNumber();
           rentalCost = new Prisma.Decimal(rentalCost.toNumber() + extraCharge);
 
-          const taxSetting = await tx.systemSetting.findUnique({ where: { key: 'TAX_PERCENTAGE' } });
+          const taxSetting = await tx.systemSetting.findUnique({
+            where: { key: 'TAX_PERCENTAGE' }
+          });
           const taxPercentage = Number(taxSetting?.value ?? config.pricing.taxPercentage);
 
-          const subtotal = rentalCost.toNumber() + booking.pickupFee.toNumber() + booking.dropOffFee.toNumber() + booking.addonsCost.toNumber();
+          const subtotal =
+            rentalCost.toNumber() +
+            booking.pickupFee.toNumber() +
+            booking.dropOffFee.toNumber() +
+            booking.addonsCost.toNumber();
           const newTaxAmount = subtotal * (taxPercentage / 100);
           const newTotalAmount = subtotal + newTaxAmount;
 
