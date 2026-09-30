@@ -29,3 +29,5 @@ jobs:
 
       - name: Lint, test, and build
         run: npm run check
+        env:
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/unicorn"
