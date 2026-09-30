@@ -578,7 +578,8 @@ const modifyBooking = async (
       hasGps: payload.hasGps ?? booking.hasGps,
       hasFullInsurance: payload.hasFullInsurance ?? booking.hasFullInsurance,
       hasAdditionalDriver: payload.hasAdditionalDriver ?? booking.hasAdditionalDriver,
-      hasChildSeat: payload.hasChildSeat ?? booking.hasChildSeat
+      hasChildSeat: payload.hasChildSeat ?? booking.hasChildSeat,
+      isChauffeurDriven: booking.isChauffeurDriven
     };
     const costs = await calculateCosts(calculatePayload, tx);
 
@@ -606,6 +607,9 @@ const modifyBooking = async (
         rentalCost: costs.rentalCost,
         pickupFee: costs.pickupFee,
         dropOffFee: costs.dropOffFee,
+        chauffeurFee: costs.chauffeurFee,
+        airportFee: costs.airportFee,
+        deliveryFee: costs.deliveryFee,
         addonsCost: costs.addonsCost,
         taxPercentage: costs.taxPercentage,
         taxAmount: costs.taxAmount,
