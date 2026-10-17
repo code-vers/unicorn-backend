@@ -338,9 +338,9 @@ model Booking {
   paymentStatus PaymentStatus @default(PENDING)
   bookingStatus BookingStatus @default(PENDING)
 
-  // Initial checkout is short-lived. A booking is confirmed only by a successful webhook.
-  checkoutSessionId String?   @unique
-  checkoutExpiresAt DateTime?
+  // Initial payment checkout is short-lived. A booking is confirmed only by a verified webhook.
+  paymentReference String?   @unique
+  paymentExpiresAt DateTime?
 
   // Associated Details
   driverDetails BookingDriverDetail?
@@ -395,11 +395,12 @@ model Payment {
   bookingId String
   booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
-  amount        Decimal       @db.Decimal(10, 2)
-  paymentMethod PaymentMethod // MPESA, AIRTEL, CARD, PESAPAL
-  transactionId String?       @unique
-  paymentStatus PaymentStatus @default(PENDING)
-  paymentType   String        @default("INITIAL") // INITIAL, EXTENSION, MODIFICATION
+  amount        Decimal         @db.Decimal(10, 2)
+  paymentMethod PaymentMethod // MPESA, AIRTEL, CARD, PESAPAL, PAYSTACK, STRIPE (legacy)
+  provider      PaymentProvider @default(MANUAL)
+  transactionId String?         @unique
+  paymentStatus PaymentStatus   @default(PENDING)
+  paymentType   String          @default("INITIAL") // INITIAL, EXTENSION, MODIFICATION
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -482,6 +483,8 @@ enum PaymentStatus {
   SUCCESS
   FAILED
   REFUNDED
+  REVIEW_REQUIRED
+  REFUND_PENDING
 }
 
 enum PaymentMethod {
@@ -490,6 +493,13 @@ enum PaymentMethod {
   CARD
   PESAPAL
   STRIPE
+  PAYSTACK
+}
+
+enum PaymentProvider {
+  MANUAL
+  STRIPE
+  PAYSTACK
 }
 
 model Pricing {

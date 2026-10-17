@@ -37,7 +37,7 @@ const getBlockingBookingWhere = (): Prisma.BookingWhereInput => ({
     { bookingStatus: { in: [BookingStatus.CONFIRMED, BookingStatus.ONGOING] } },
     {
       bookingStatus: BookingStatus.PENDING,
-      OR: [{ checkoutExpiresAt: null }, { checkoutExpiresAt: { gt: new Date() } }]
+      OR: [{ paymentExpiresAt: null }, { paymentExpiresAt: { gt: new Date() } }]
     }
   ]
 });
@@ -46,26 +46,7 @@ export const buildMyBookingsWhere = (
   userId: string,
   queryWhere?: Prisma.BookingWhereInput
 ): Prisma.BookingWhereInput => ({
-  AND: [
-    ...(queryWhere ? [queryWhere] : []),
-    { userId },
-    {
-      OR: [
-        { checkoutSessionId: null },
-        { paymentStatus: { in: [PaymentStatus.SUCCESS, PaymentStatus.REFUNDED] } },
-        {
-          bookingStatus: {
-            in: [
-              BookingStatus.CONFIRMED,
-              BookingStatus.ONGOING,
-              BookingStatus.COMPLETED,
-              BookingStatus.CANCELLED
-            ]
-          }
-        }
-      ]
-    }
-  ]
+  AND: [...(queryWhere ? [queryWhere] : []), { userId }]
 });
 
 const calculateCosts = async (
@@ -537,7 +518,7 @@ const modifyBooking = async (
     if (role !== 'ADMIN' && booking.userId !== userId) throw new AppError(403, 'Unauthorized');
     if (
       role !== 'ADMIN' &&
-      booking.checkoutSessionId &&
+      booking.paymentReference &&
       booking.paymentStatus === PaymentStatus.PENDING &&
       booking.bookingStatus === BookingStatus.PENDING
     ) {
@@ -742,8 +723,8 @@ const updateBookingStatus = async (id: string, payload: IBookingUpdateStatusPayl
         taxAmount,
         totalAmount,
         paymentStatus,
-        checkoutSessionId: isNowActive ? null : booking.checkoutSessionId,
-        checkoutExpiresAt: isNowActive ? null : booking.checkoutExpiresAt
+        paymentReference: isNowActive ? null : booking.paymentReference,
+        paymentExpiresAt: isNowActive ? null : booking.paymentExpiresAt
       },
       include: {
         vehicle: true,

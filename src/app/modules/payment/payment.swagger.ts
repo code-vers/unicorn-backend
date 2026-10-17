@@ -9,44 +9,32 @@ import {
   createSuccessResponse
 } from '../../utils/swaggerHelpers';
 
-const CheckoutSessionResponseSchema = z.object({
+const CheckoutResponseSchema = z.object({
   url: z.string().openapi({
-    description: 'Stripe Checkout URL. Redirect the user to this URL to complete payment.'
+    description: 'Paystack Checkout URL. Redirect the user to this URL to complete payment.'
   }),
-  sessionId: z.string().openapi({ description: 'Stripe Checkout Session ID.' })
+  reference: z.string().openapi({ description: 'Paystack transaction reference.' })
 });
 
 export const registerPaymentSwagger = (
   registry: OpenAPIRegistry,
   bearerAuth: { name: string }
 ): void => {
-  // POST /payments/create-extension-session
   registry.registerPath({
     method: 'post',
     path: '/api/v1/payments/create-extension-session',
-    tags: ['Payments (Stripe)'],
-    summary: 'Create a Stripe Checkout Session for a booking extension',
-    description:
-      'Use this after calling `PATCH /bookings/{id}/modify` to change the return date. Returns a Stripe-hosted checkout URL for the extension amount only.',
+    tags: ['Payments (Paystack)'],
+    summary: 'Create a Paystack checkout for a booking extension',
+    description: 'Creates a Paystack-hosted checkout for the outstanding extension balance.',
     security: [{ [bearerAuth.name]: [] }],
     request: {
-      body: {
-        content: {
-          'application/json': {
-            schema: z.object({
-              bookingId: z
-                .string()
-                .openapi({ description: 'The ID of the booking being extended.' })
-            })
-          }
-        }
-      }
+      body: { content: { 'application/json': { schema: z.object({ bookingId: z.string() }) } } }
     },
     responses: {
       200: createSuccessResponse(
-        CheckoutSessionResponseSchema,
-        'Extension checkout session created.',
-        'Redirect user to the returned `url`.'
+        CheckoutResponseSchema,
+        'Extension checkout created.',
+        'Redirect user to the returned URL.'
       ),
       400: Error400,
       401: Error401,
@@ -56,31 +44,50 @@ export const registerPaymentSwagger = (
     }
   });
 
-  // POST /payments/webhook
   registry.registerPath({
     method: 'post',
     path: '/api/v1/payments/webhook',
-    tags: ['Payments (Stripe)'],
-    summary: 'Stripe Webhook Endpoint (Internal — Do NOT call from frontend)',
-    description:
-      'This endpoint is called automatically by Stripe after a successful payment. It verifies the Stripe signature and updates the booking status in the database.',
+    tags: ['Payments (Paystack)'],
+    summary: 'Paystack webhook endpoint',
+    description: 'Internal endpoint for signed Paystack payment and refund events.',
     request: {
       headers: z.object({
-        'stripe-signature': z
+        'x-paystack-signature': z
           .string()
-          .openapi({ description: 'Stripe webhook signature for verification.' })
+          .openapi({ description: 'Paystack HMAC-SHA512 webhook signature.' })
       })
     },
     responses: {
-      200: {
-        description: 'Webhook received and processed.',
-        content: {
-          'application/json': {
-            schema: z.object({ received: z.boolean() })
-          }
-        }
-      },
+      200: { description: 'Webhook received and processed.' },
       400: Error400,
+      500: Error500
+    }
+  });
+
+  registry.registerPath({
+    method: 'post',
+    path: '/api/v1/payments/{id}/review',
+    tags: ['Payments (Paystack)'],
+    summary: 'Resolve a late Paystack payment',
+    security: [{ [bearerAuth.name]: [] }],
+    request: {
+      params: z.object({ id: z.string() }),
+      body: {
+        content: {
+          'application/json': { schema: z.object({ action: z.enum(['CONFIRM', 'REFUND']) }) }
+        }
+      }
+    },
+    responses: {
+      200: createSuccessResponse(
+        z.any(),
+        'Payment review completed.',
+        'Payment was confirmed or a refund was requested.'
+      ),
+      400: Error400,
+      401: Error401,
+      403: Error403,
+      404: Error404,
       500: Error500
     }
   });

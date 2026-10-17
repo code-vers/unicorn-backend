@@ -10,7 +10,7 @@ const router = Router();
  * POST /api/v1/payments/create-extension-session
  * Auth: USER or ADMIN
  * Body: { bookingId: string }
- * Returns: { url: string, sessionId: string }
+ * Returns: { url: string, reference: string }
  * Frontend redirects user to `url`.
  */
 router.post(
@@ -20,13 +20,19 @@ router.post(
   PaymentController.createExtensionCheckoutSession
 );
 
-router.get('/my-payments', auth('USER', 'ADMIN'), PaymentController.getMyPayments);
-
 /**
  * POST /api/v1/payments/webhook
- * Called ONLY by Stripe (no auth middleware).
+ * Called ONLY by Paystack (no auth middleware).
  * IMPORTANT: Uses express.raw() body parser (configured in app.ts) to get the raw body for signature verification.
  */
-router.post('/webhook', PaymentController.stripeWebhook);
+router.post('/webhook', PaymentController.paystackWebhook);
+
+router.get('/my-payments', auth('USER', 'ADMIN'), PaymentController.getMyPayments);
+router.post(
+  '/:id/review',
+  auth('ADMIN'),
+  validateRequest(PaymentValidation.reviewPayment),
+  PaymentController.reviewPayment
+);
 
 export const PaymentRoutes = router;

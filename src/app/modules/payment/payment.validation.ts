@@ -8,6 +8,12 @@ const createExtensionCheckoutSession = z.object({
     .strict()
 });
 
+const reviewPayment = z.object({
+  params: z.object({ id: z.string().uuid('payment id must be a valid UUID') }),
+  body: z.object({ action: z.enum(['CONFIRM', 'REFUND']) }).strict()
+});
+
 export const PaymentValidation = {
-  createExtensionCheckoutSession
+  createExtensionCheckoutSession,
+  reviewPayment
 };

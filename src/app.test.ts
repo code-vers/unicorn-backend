@@ -62,7 +62,7 @@ describe('App', () => {
     expect(response.body.message).toBe('You do not have permission to access this resource.');
   });
 
-  it('should validate booking checkout payloads before invoking the database or Stripe', async () => {
+  it('should validate booking checkout payloads before invoking the database or Paystack', async () => {
     const response = await supertest(app)
       .post('/api/v1/bookings/checkout')
       .set('Authorization', `Bearer ${createToken('USER')}`)
@@ -143,13 +143,13 @@ describe('App', () => {
     expect(response.body.message).toBe('Invalid file type for this upload.');
   });
 
-  it('should reject unsigned Stripe webhook requests', async () => {
+  it('should reject unsigned Paystack webhook requests', async () => {
     const response = await supertest(app)
       .post('/api/v1/payments/webhook')
       .set('Content-Type', 'application/json')
       .send('{}');
 
     expect(response.status).toBe(400);
-    expect(response.body.message).toBe('Stripe signature is required.');
+    expect(response.body.message).toBe('Paystack signature is required.');
   });
 });

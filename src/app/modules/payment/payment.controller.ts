@@ -5,7 +5,7 @@ import { PaymentService } from './payment.service';
 
 /**
  * POST /api/v1/payments/create-extension-session
- * Creates a Stripe Checkout Session for a booking extension.
+ * Creates a Paystack Checkout session for a booking extension.
  * Frontend should redirect user to the returned `url`.
  */
 const createExtensionCheckoutSession = catchAsync(async (req: Request, res: Response) => {
@@ -17,26 +17,36 @@ const createExtensionCheckoutSession = catchAsync(async (req: Request, res: Resp
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: 'Extension checkout session created successfully.',
+    message: 'Extension checkout created successfully.',
     data: result
   });
 });
 
 /**
  * POST /api/v1/payments/webhook
- * Called exclusively by Stripe after a successful payment.
+ * Called exclusively by Paystack for payment and refund events.
  * Requires raw body (NOT parsed JSON) — handled in app.ts.
  */
-const stripeWebhook = catchAsync(async (req: Request, res: Response) => {
-  const signature = req.headers['stripe-signature'];
+const paystackWebhook = catchAsync(async (req: Request, res: Response) => {
+  const signature = req.headers['x-paystack-signature'];
   if (typeof signature !== 'string') {
-    res.status(400).json({ success: false, message: 'Stripe signature is required.' });
+    res.status(400).json({ success: false, message: 'Paystack signature is required.' });
     return;
   }
   // req.body here is the raw Buffer because of express.raw() in app.ts
   await PaymentService.handleWebhook(req.body as Buffer, signature);
-  // Stripe requires a 200 response quickly to acknowledge receipt
+  // Paystack retries non-200 webhook responses, so acknowledge promptly after processing.
   res.status(200).json({ received: true });
+});
+
+const reviewPayment = catchAsync(async (req: Request, res: Response) => {
+  const result = await PaymentService.reviewPayment(req.params.id as string, req.body.action);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Payment review completed.',
+    data: result
+  });
 });
 
 const getMyPayments = catchAsync(async (req: Request, res: Response) => {
@@ -53,5 +63,6 @@ const getMyPayments = catchAsync(async (req: Request, res: Response) => {
 export const PaymentController = {
   createExtensionCheckoutSession,
   getMyPayments,
-  stripeWebhook
+  paystackWebhook,
+  reviewPayment
 };
