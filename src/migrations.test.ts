@@ -59,6 +59,24 @@ describe('Prisma migrations', () => {
         'paymentExpiresAt',
         'paymentReference'
       ]);
+
+      const pesapalColumns = await database.query<{ column_name: string }>(
+        `SELECT column_name
+           FROM information_schema.columns
+          WHERE table_name = 'payments'
+            AND column_name IN (
+              'providerTrackingId',
+              'providerConfirmationCode',
+              'providerPaymentMethod',
+              'providerStatus'
+            )`
+      );
+      expect(pesapalColumns.rows.map((row) => row.column_name).sort()).toEqual([
+        'providerConfirmationCode',
+        'providerPaymentMethod',
+        'providerStatus',
+        'providerTrackingId'
+      ]);
     } finally {
       await database.close();
     }

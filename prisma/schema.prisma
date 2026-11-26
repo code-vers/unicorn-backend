@@ -395,12 +395,16 @@ model Payment {
   bookingId String
   booking   Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
-  amount        Decimal         @db.Decimal(10, 2)
-  paymentMethod PaymentMethod // MPESA, AIRTEL, CARD, PESAPAL, PAYSTACK, STRIPE (legacy)
-  provider      PaymentProvider @default(MANUAL)
-  transactionId String?         @unique
-  paymentStatus PaymentStatus   @default(PENDING)
-  paymentType   String          @default("INITIAL") // INITIAL, EXTENSION, MODIFICATION
+  amount                   Decimal         @db.Decimal(10, 2)
+  paymentMethod            PaymentMethod // MPESA, AIRTEL, CARD, PESAPAL
+  provider                 PaymentProvider @default(MANUAL)
+  transactionId            String?         @unique
+  providerTrackingId       String?         @unique
+  providerConfirmationCode String?
+  providerPaymentMethod    String?
+  providerStatus           String?
+  paymentStatus            PaymentStatus   @default(PENDING)
+  paymentType              String          @default("INITIAL") // INITIAL, EXTENSION, MODIFICATION
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -492,14 +496,11 @@ enum PaymentMethod {
   AIRTEL
   CARD
   PESAPAL
-  STRIPE
-  PAYSTACK
 }
 
 enum PaymentProvider {
   MANUAL
-  STRIPE
-  PAYSTACK
+  PESAPAL
 }
 
 model Pricing {

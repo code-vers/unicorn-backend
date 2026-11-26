@@ -5,7 +5,7 @@ import { PaymentService } from './payment.service';
 
 /**
  * POST /api/v1/payments/create-extension-session
- * Creates a Paystack Checkout session for a booking extension.
+ * Creates a Pesapal checkout order for a booking extension.
  * Frontend should redirect user to the returned `url`.
  */
 const createExtensionCheckoutSession = catchAsync(async (req: Request, res: Response) => {
@@ -23,28 +23,67 @@ const createExtensionCheckoutSession = catchAsync(async (req: Request, res: Resp
 });
 
 /**
- * POST /api/v1/payments/webhook
- * Called exclusively by Paystack for payment and refund events.
- * Requires raw body (NOT parsed JSON) — handled in app.ts.
+ * GET / POST /api/v1/payments/pesapal/ipn
+ * Called by Pesapal when a transaction status changes.
+ * Responds with Pesapal's required JSON acknowledgement.
  */
-const paystackWebhook = catchAsync(async (req: Request, res: Response) => {
-  const signature = req.headers['x-paystack-signature'];
-  if (typeof signature !== 'string') {
-    res.status(400).json({ success: false, message: 'Paystack signature is required.' });
-    return;
-  }
-  // req.body here is the raw Buffer because of express.raw() in app.ts
-  await PaymentService.handleWebhook(req.body as Buffer, signature);
-  // Paystack retries non-200 webhook responses, so acknowledge promptly after processing.
-  res.status(200).json({ received: true });
+const pesapalIpn = catchAsync(async (req: Request, res: Response) => {
+  const source = req.method === 'GET' ? req.query : req.body;
+  const token = typeof req.query.token === 'string' ? req.query.token : undefined;
+
+  const ack = await PaymentService.handleIpn(
+    {
+      OrderTrackingId:
+        typeof source?.OrderTrackingId === 'string' ? source.OrderTrackingId : undefined,
+      OrderMerchantReference:
+        typeof source?.OrderMerchantReference === 'string'
+          ? source.OrderMerchantReference
+          : undefined,
+      OrderNotificationType:
+        typeof source?.OrderNotificationType === 'string' ? source.OrderNotificationType : undefined
+    },
+    token
+  );
+
+  res.status(200).json(ack);
+});
+
+const getPaymentStatus = catchAsync(async (req: Request, res: Response) => {
+  const orderTrackingId = req.query.orderTrackingId as string;
+  const result = await PaymentService.getPaymentStatus(
+    orderTrackingId,
+    req.user!.userId,
+    req.user!.role
+  );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Payment status retrieved successfully.',
+    data: result
+  });
 });
 
 const reviewPayment = catchAsync(async (req: Request, res: Response) => {
-  const result = await PaymentService.reviewPayment(req.params.id as string, req.body.action);
+  const result = await PaymentService.reviewPayment(
+    req.params.id as string,
+    req.body.action,
+    req.user!.email
+  );
   sendResponse(res, {
     statusCode: 200,
     success: true,
     message: 'Payment review completed.',
+    data: result
+  });
+});
+
+const refreshPaymentStatus = catchAsync(async (req: Request, res: Response) => {
+  const result = await PaymentService.refreshPaymentStatus(req.params.id as string);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Payment status refreshed successfully.',
     data: result
   });
 });
@@ -63,6 +102,8 @@ const getMyPayments = catchAsync(async (req: Request, res: Response) => {
 export const PaymentController = {
   createExtensionCheckoutSession,
   getMyPayments,
-  paystackWebhook,
+  getPaymentStatus,
+  pesapalIpn,
+  refreshPaymentStatus,
   reviewPayment
 };

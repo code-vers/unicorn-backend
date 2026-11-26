@@ -36,7 +36,12 @@ if (nodeEnv === 'production') {
     'SMTP_FROM',
     'TAX_PERCENTAGE',
     'MODIFICATION_FEE',
-    'PAYSTACK_SECRET_KEY'
+    'PESAPAL_CONSUMER_KEY',
+    'PESAPAL_CONSUMER_SECRET',
+    'PESAPAL_ENV',
+    'PESAPAL_IPN_ID',
+    'PESAPAL_IPN_TOKEN',
+    'BACKEND_PUBLIC_URL'
   ];
   const missingVariables = requiredVariables.filter((name) => !process.env[name]);
   if (missingVariables.length > 0) {
@@ -58,12 +63,19 @@ if (nodeEnv === 'production') {
   if (new Set(jwtSecrets).size !== jwtSecrets.length) {
     throw new Error('JWT access, refresh, and reset secrets must be different.');
   }
-  for (const value of [process.env.FRONTEND_URL!, ...process.env.CORS_ORIGIN!.split(',')]) {
+  for (const value of [
+    process.env.FRONTEND_URL!,
+    process.env.BACKEND_PUBLIC_URL!,
+    ...process.env.CORS_ORIGIN!.split(',')
+  ]) {
     try {
       new URL(value.trim());
     } catch {
       throw new Error(`Invalid production URL: ${value}`);
     }
+  }
+  if (process.env.PESAPAL_ENV !== 'live') {
+    throw new Error('PESAPAL_ENV must be set to "live" in production.');
   }
   const taxPercentage = parseOptionalNumber(process.env.TAX_PERCENTAGE);
   const modificationFee = parseOptionalNumber(process.env.MODIFICATION_FEE);
@@ -102,9 +114,18 @@ const config = {
     pass: process.env.SMTP_PASS ?? '',
     from: process.env.SMTP_FROM ?? ''
   },
-  paystack: {
-    secretKey: process.env.PAYSTACK_SECRET_KEY ?? '',
-    currency: (process.env.PAYMENT_CURRENCY ?? 'kes').toLowerCase()
+  pesapal: {
+    consumerKey: process.env.PESAPAL_CONSUMER_KEY ?? '',
+    consumerSecret: process.env.PESAPAL_CONSUMER_SECRET ?? '',
+    env: (process.env.PESAPAL_ENV === 'live' ? 'live' : 'sandbox') as 'sandbox' | 'live',
+    baseUrl:
+      process.env.PESAPAL_ENV === 'live'
+        ? 'https://pay.pesapal.com/v3'
+        : 'https://cybqa.pesapal.com/pesapalv3',
+    ipnId: process.env.PESAPAL_IPN_ID ?? '',
+    ipnToken: process.env.PESAPAL_IPN_TOKEN ?? '',
+    backendPublicUrl: process.env.BACKEND_PUBLIC_URL ?? '',
+    currency: (process.env.PAYMENT_CURRENCY ?? 'KES').toUpperCase()
   },
   pricing: {
     taxPercentage: parseOptionalNumber(process.env.TAX_PERCENTAGE),

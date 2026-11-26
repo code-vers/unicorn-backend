@@ -62,7 +62,7 @@ describe('App', () => {
     expect(response.body.message).toBe('You do not have permission to access this resource.');
   });
 
-  it('should validate booking checkout payloads before invoking the database or Paystack', async () => {
+  it('should validate booking checkout payloads before invoking the database or Pesapal', async () => {
     const response = await supertest(app)
       .post('/api/v1/bookings/checkout')
       .set('Authorization', `Bearer ${createToken('USER')}`)
@@ -143,13 +143,9 @@ describe('App', () => {
     expect(response.body.message).toBe('Invalid file type for this upload.');
   });
 
-  it('should reject unsigned Paystack webhook requests', async () => {
-    const response = await supertest(app)
-      .post('/api/v1/payments/webhook')
-      .set('Content-Type', 'application/json')
-      .send('{}');
+  it('should reject invalid Pesapal IPN requests without required parameters', async () => {
+    const response = await supertest(app).get('/api/v1/payments/pesapal/ipn');
 
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe('Paystack signature is required.');
+    expect([400, 401]).toContain(response.status);
   });
 });

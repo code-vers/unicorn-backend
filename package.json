@@ -5,7 +5,7 @@
   "main": "dist/server.js",
   "prisma": {},
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "NODE_EXTRA_CA_CERTS=certs/pesapal-sandbox-ca.pem tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
     "lint": "eslint .",
@@ -18,7 +18,8 @@
     "prisma:deploy": "prisma migrate deploy --schema=./prisma/schema.prisma",
     "prisma:seed": "tsx prisma/seed.ts",
     "prisma:studio": "prisma studio",
-    "prisma:format": "prisma format --schema=./prisma/schema.prisma"
+    "prisma:format": "prisma format --schema=./prisma/schema.prisma",
+    "pesapal:register-ipn": "NODE_EXTRA_CA_CERTS=certs/pesapal-sandbox-ca.pem tsx src/scripts/register-pesapal-ipn.ts"
   },
   "keywords": [],
   "author": "",

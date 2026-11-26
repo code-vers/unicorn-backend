@@ -21,18 +21,33 @@ router.post(
 );
 
 /**
- * POST /api/v1/payments/webhook
- * Called ONLY by Paystack (no auth middleware).
- * IMPORTANT: Uses express.raw() body parser (configured in app.ts) to get the raw body for signature verification.
+ * GET / POST /api/v1/payments/pesapal/ipn
+ * Called by Pesapal IPN (no JWT auth; verified via IPN token + GetTransactionStatus).
  */
-router.post('/webhook', PaymentController.paystackWebhook);
+router.get('/pesapal/ipn', PaymentController.pesapalIpn);
+router.post('/pesapal/ipn', PaymentController.pesapalIpn);
+
+router.get(
+  '/status',
+  auth('USER', 'ADMIN'),
+  validateRequest(PaymentValidation.getPaymentStatus),
+  PaymentController.getPaymentStatus
+);
 
 router.get('/my-payments', auth('USER', 'ADMIN'), PaymentController.getMyPayments);
+
 router.post(
   '/:id/review',
   auth('ADMIN'),
   validateRequest(PaymentValidation.reviewPayment),
   PaymentController.reviewPayment
+);
+
+router.post(
+  '/:id/refresh',
+  auth('ADMIN'),
+  validateRequest(PaymentValidation.paymentIdParams),
+  PaymentController.refreshPaymentStatus
 );
 
 export const PaymentRoutes = router;

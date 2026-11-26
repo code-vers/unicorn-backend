@@ -69,8 +69,8 @@ Submit the complete booking along with driver details and billing info. The resp
 }
 ```
 
-The vehicle is held for about 31 minutes while Paystack Checkout is open. The booking is confirmed
-only after the signed Paystack webhook verifies full payment. Cancelling or allowing checkout to
+The vehicle is held for about 31 minutes while Pesapal Checkout is open. The booking is confirmed
+only after the backend verifies full payment via Pesapal `GetTransactionStatus` (triggered by IPN or status polling). Cancelling or allowing checkout to
 expire releases the hold; there is no customer pay-later endpoint. `POST /api/v1/bookings` is
 reserved for administrators.
 
@@ -92,7 +92,7 @@ When the user selects a new return date or adds an extra driver.
 
 ### Step 3.2: Pay & Extend
 **Endpoint:** `POST /api/v1/payments/create-extension-session` (Auth Required)
-Create Paystack Checkout for the extra balance generated in Step 3.1, then redirect to the returned
+Create Pesapal Checkout for the extra balance generated in Step 3.1, then redirect to the returned
 `data.url`. The browser return is informational only; the signed webhook remains the source of truth.
 ```json
 {

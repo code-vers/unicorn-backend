@@ -1,5 +1,6 @@
 import app from './app';
 import config from './app/config';
+import { PaymentService } from './app/modules/payment/payment.service';
 import { logger } from './app/utils/logger';
 import prisma, { pool } from './app/utils/prisma';
 
@@ -7,6 +8,7 @@ const server = app.listen(config.port);
 
 server.on('listening', () => {
   logger.info(`Server is running on port ${config.port}`);
+  PaymentService.startReconcileSweeper();
 });
 
 server.on('error', (error: NodeJS.ErrnoException) => {
@@ -16,6 +18,7 @@ server.on('error', (error: NodeJS.ErrnoException) => {
 
 const shutdown = async (signal: string): Promise<void> => {
   logger.info(`${signal} received. Shutting down gracefully.`);
+  PaymentService.stopReconcileSweeper();
   server.close(async () => {
     await prisma.$disconnect();
     await pool.end();

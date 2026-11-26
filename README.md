@@ -40,13 +40,13 @@ A RESTful API powering the Unicorn Car Rental Platform. Built with Node.js, Expr
 | [PostgreSQL](https://www.postgresql.org/) | Relational database |
 | [Zod](https://zod.dev/) | Schema validation |
 | [JWT](https://github.com/auth0/node-jsonwebtoken) | Authentication tokens |
-| [Paystack](https://paystack.com/) | Payment processing (M-PESA and cards) |
+| [Pesapal](https://www.pesapal.com/) | Payment processing (M-PESA, Airtel Money, and cards) |
 | [Nodemailer](https://nodemailer.com/) | Email sending |
 | [Multer](https://github.com/expressjs/multer) | File uploads |
 | [Winston](https://github.com/winstonjs/winston) | Logging |
 | [Helmet](https://helmetjs.github.io/) | Security headers |
 
-For production deployment of the payment integration, follow [the Paystack cutover checklist](PAYSTACK_CUTOVER.md).
+For production deployment of the payment integration, follow [the Pesapal cutover checklist](PESAPAL_CUTOVER.md).
 | [Jest](https://jestjs.io/) | Testing framework |
 
 ---
@@ -174,7 +174,12 @@ The API will be available at [http://localhost:5000](http://localhost:5000).
 | `SMTP_USER` | SMTP username | `your_smtp_user` |
 | `SMTP_PASS` | SMTP password | `your_smtp_password` |
 | `SMTP_FROM` | Sender email address | `noreply@example.com` |
-| `PAYSTACK_SECRET_KEY` | Paystack secret key | `sk_test_...` |
+| `PESAPAL_ENV` | Pesapal environment (`sandbox` or `live`) | `live` |
+| `PESAPAL_CONSUMER_KEY` | Pesapal consumer key | `...` |
+| `PESAPAL_CONSUMER_SECRET` | Pesapal consumer secret | `...` |
+| `PESAPAL_IPN_ID` | Registered Pesapal IPN GUID | `...` |
+| `PESAPAL_IPN_TOKEN` | Shared token appended to IPN URL | `...` |
+| `BACKEND_PUBLIC_URL` | Public backend URL for Pesapal IPN | `https://api.example.com` |
 | `PAYMENT_CURRENCY` | Default payment currency | `kes` |
 
 ---
@@ -189,7 +194,7 @@ The database schema is defined in `prisma/schema.prisma` and includes models for
 - **Vehicles** (fleet management)
 - **Drivers** (assigned drivers)
 - **Bookings** (rental reservations)
-- **Payments** (Paystack transactions and legacy payment history)
+- **Payments** (Pesapal transactions and payment history)
 - **Locations** (pickup / drop-off points)
 - **Notifications**, **Support Tickets**, **Documents**, **Activity Logs**, etc.
 
@@ -247,7 +252,7 @@ npm run prisma:seed
 | `/api/v1/drivers` | Driver | Driver assignment & management |
 | `/api/v1/locations` | Location | Pickup / drop-off locations |
 | `/api/v1/bookings` | Booking | Rental reservations & status |
-| `/api/v1/payments` | Payment | Paystack checkout, webhooks & payment review |
+| `/api/v1/payments` | Payment | Pesapal checkout, IPN, status & payment review |
 | `/api/v1/pricing` | Pricing | Rental pricing rules |
 | `/api/v1/settings` | Setting | System configuration |
 | `/api/v1/notifications` | Notification | User notifications |

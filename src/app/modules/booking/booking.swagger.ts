@@ -107,7 +107,7 @@ export const registerBookingSwagger = (
     tags: ['Bookings'],
     summary: 'Create a booking checkout (USER only)',
     description:
-      'Creates a temporary vehicle hold and a required Paystack checkout together. The booking is confirmed only after Paystack verifies full payment.',
+      'Creates a temporary vehicle hold and a required Pesapal checkout together. The booking is confirmed only after Pesapal verifies full payment.',
     security: [{ [bearerAuth.name]: [] }],
     request: {
       body: {

@@ -31,10 +31,6 @@ app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors(corsOptions));
 app.use(cookieParser());
 
-// IMPORTANT: Paystack webhook needs raw body for HMAC signature verification.
-// This MUST be registered before express.json() parses the body.
-app.use('/api/v1/payments/webhook', express.raw({ type: 'application/json' }));
-
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
