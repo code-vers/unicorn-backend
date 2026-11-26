@@ -49,15 +49,15 @@ describe('Prisma migrations', () => {
       expect(distanceColumn.rows).toHaveLength(1);
       expect(distanceColumn.rows[0]?.data_type).toBe('numeric');
 
-      const checkoutColumns = await database.query<{ column_name: string }>(
+      const paymentColumns = await database.query<{ column_name: string }>(
         `SELECT column_name
            FROM information_schema.columns
           WHERE table_name = 'bookings'
-            AND column_name IN ('checkoutSessionId', 'checkoutExpiresAt')`
+            AND column_name IN ('paymentReference', 'paymentExpiresAt')`
       );
-      expect(checkoutColumns.rows.map((row) => row.column_name).sort()).toEqual([
-        'checkoutExpiresAt',
-        'checkoutSessionId'
+      expect(paymentColumns.rows.map((row) => row.column_name).sort()).toEqual([
+        'paymentExpiresAt',
+        'paymentReference'
       ]);
     } finally {
       await database.close();

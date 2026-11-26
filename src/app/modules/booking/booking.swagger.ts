@@ -34,8 +34,8 @@ const BookingSchema = z.object({
   amountPaid: z.number(),
   paymentStatus: z.string(),
   bookingStatus: z.string(),
-  checkoutSessionId: z.string().nullable().optional(),
-  checkoutExpiresAt: z.string().nullable().optional(),
+  paymentReference: z.string().nullable().optional(),
+  paymentExpiresAt: z.string().nullable().optional(),
   assignedDriverId: z.string().nullable().optional(),
   createdAt: z.string(),
   updatedAt: z.string()
@@ -107,7 +107,7 @@ export const registerBookingSwagger = (
     tags: ['Bookings'],
     summary: 'Create a booking checkout (USER only)',
     description:
-      'Creates a temporary vehicle hold and a required Stripe Checkout Session together. The booking is confirmed only after Stripe verifies full payment.',
+      'Creates a temporary vehicle hold and a required Paystack checkout together. The booking is confirmed only after Paystack verifies full payment.',
     security: [{ [bearerAuth.name]: [] }],
     request: {
       body: {
@@ -122,7 +122,7 @@ export const registerBookingSwagger = (
       201: createSuccessResponse(
         z.object({
           booking: BookingSchema,
-          checkout: z.object({ url: z.string(), sessionId: z.string() })
+          checkout: z.object({ url: z.string(), reference: z.string() })
         }),
         'Secure checkout created successfully',
         'Redirect the customer to the returned checkout URL.'

@@ -36,8 +36,7 @@ if (nodeEnv === 'production') {
     'SMTP_FROM',
     'TAX_PERCENTAGE',
     'MODIFICATION_FEE',
-    'STRIPE_SECRET_KEY',
-    'STRIPE_WEBHOOK_SECRET'
+    'PAYSTACK_SECRET_KEY'
   ];
   const missingVariables = requiredVariables.filter((name) => !process.env[name]);
   if (missingVariables.length > 0) {
@@ -103,9 +102,8 @@ const config = {
     pass: process.env.SMTP_PASS ?? '',
     from: process.env.SMTP_FROM ?? ''
   },
-  stripe: {
-    secretKey: process.env.STRIPE_SECRET_KEY ?? '',
-    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? '',
+  paystack: {
+    secretKey: process.env.PAYSTACK_SECRET_KEY ?? '',
     currency: (process.env.PAYMENT_CURRENCY ?? 'kes').toLowerCase()
   },
   pricing: {
